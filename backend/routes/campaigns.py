@@ -51,7 +51,7 @@ def launch(cid: int, u: M.User = Depends(require_role("admin", "manager")), db: 
     c = db.query(M.Campaign).filter_by(id=cid, tenant_id=u.tenant_id).first()
     if not c: raise HTTPException(404, "Not found")
     if c.status == "completed": raise HTTPException(400, "Already launched")
-    rnd = random.Random(42 + cid)
+    rnd = random.Random(42 + cid)  # nosec B311 -- simulated A/B outcomes for demo, not security use
     rows = audience_query(db, u.tenant_id, {"min_proba": c.audience.get("min_proba", 0.4),
         "min_clv": c.audience.get("min_clv", 0), "segment": c.audience.get("segment")})
     if not rows: raise HTTPException(400, "Audience is empty — loosen filters")

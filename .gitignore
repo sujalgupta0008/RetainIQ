@@ -37,3 +37,14 @@ Thumbs.db
 
 # Misc
 *.csv.bak
+
+# Test / coverage artifacts (audit hygiene)
+test_smoke.db
+test_audit.db
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# ML artifact integrity sidecars are TRACKED (*.sha256); ignore local retrain backups
+*.pkl.bak

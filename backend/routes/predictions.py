@@ -28,7 +28,6 @@ def retrain(u: M.User = Depends(require_role("admin", "manager", "analyst")), db
         raise HTTPException(400, "No customer features for this workspace yet — upload data first")
     train_main()
     df = pd.DataFrame([x.f for x in cfs]); med = {c: float(df[c].median()) for c in df.columns}
-    vals = db.query(M.CustomerValue).filter_by(tenant_id=u.tenant_id).all()
     tmp = {}
     for cf in cfs:
         pr = predict_proba(cf.f)

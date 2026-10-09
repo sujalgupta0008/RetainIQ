@@ -17,7 +17,7 @@ PRODUCTS = [("Everyday Savings","deposit"),("Salary Current","deposit"),("Platin
 SEGMENTS = ["Mass","Affluent","HNI","SME"]
 
 def run(reset=False):
-    rnd = random.Random(SEED)
+    rnd = random.Random(SEED)  # nosec B311 -- deterministic synthetic demo data, not security use
     if reset:
         Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)

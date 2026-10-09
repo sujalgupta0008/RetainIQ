@@ -15,7 +15,7 @@ app = FastAPI(title="RetainIQ API", version="1.0.0",
 
 # FIX (S03): fail-loud on default JWT secret in production. Tests/dev keep the fallback
 # with a warning so the suite runs without env setup.
-_JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")
+_JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")  # nosec B105 -- dev-only fallback; prod refuses to start (see below)
 if _JWT_SECRET == "dev-secret-change-me":
     if os.getenv("RETAINIQ_ENV", "dev").lower().startswith("prod"):
         raise RuntimeError("REFUSING TO START: set a strong JWT_SECRET in production")

@@ -59,12 +59,12 @@ def _verified_path(name: str) -> str:
 
 def _load():
     global _model, _scaler
-    import pickle
+    import pickle  # nosec B403 -- trusted artifacts only (sha256-verified, fixed paths)
     try:
         with open(_verified_path("model.pkl"), "rb") as f:
-            _model = pickle.load(f)
+            _model = pickle.load(f)  # nosec B301 -- see module docstring (S09)
         with open(_verified_path("scaler.pkl"), "rb") as f:
-            _scaler = pickle.load(f)
+            _scaler = pickle.load(f)  # nosec B301 -- see module docstring (S09)
         return True
     except Exception as e:
         log.warning("Artifact load failed (%s); using rule fallback", e)
@@ -91,6 +91,6 @@ def predict_proba(feats: dict) -> float:
             v = _scaler.transform(v)
             p = float(_model.predict_proba(v)[0][1])
             return max(0.01, min(0.99, p))
-        except Exception:
-            pass
+        except Exception as e:
+            log.debug("Model inference failed (%s); using rule fallback", e)
     return round(max(0.01, min(0.99, _rule(feats))), 4)

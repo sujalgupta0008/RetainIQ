@@ -1,0 +1,39 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          pip install -r backend/requirements.txt
+          pip install ruff bandit pip-audit pytest pytest-cov
+      - name: Lint (ruff)
+        run: ruff check backend/ || true
+      - name: Security scan (bandit)
+        run: bandit -q -r backend/ -x backend/tests/ || true
+      - name: Dependency audit
+        run: pip-audit || true
+      - name: Tests + coverage
+        env:
+          DATABASE_URL: sqlite:///./test_audit.db
+        run: python -m pytest backend/tests/ -q --cov=backend --cov-fail-under=70
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - working-directory: frontend
+        run: |
+          npm ci || npm install
+          npm run build

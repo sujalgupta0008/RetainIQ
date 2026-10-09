@@ -161,7 +161,7 @@ def explain_fallback(feats: dict, proba: float, medians: dict) -> tuple:
         f = feats[k]; m = medians.get(k, f)
         pct = 0
         try: pct = (f-m)/abs(m)*100 if m else 0
-        except: pct = 0
+        except Exception: pct = 0
         lbl = FEAT_LABELS.get(k, k)
         if k in ("balance_trend","txn_trend"):
             return f"{lbl} {'fell' if f<0 else 'weakened'} ({f:.0%})"
