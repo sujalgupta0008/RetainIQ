@@ -2,7 +2,7 @@
 import uuid
 
 from backend.schemas import RegisterIn
-from backend.services import calc_roi, decode_token, escape_like, make_token
+from backend.services import calc_roi, decode_token, escape_like, expected_roi_value, make_token, scenarios
 
 
 def _fresh_tenant_headers(client):
@@ -72,6 +72,36 @@ def test_calc_roi_clamps_nonsense():
     assert resp["targeted"] >= 0 and resp["cost"] >= 0 and resp["revenue"] >= 0
     resp = calc_roi(0, 0.25, 100000, 800)
     assert resp["targeted"] == 0 and resp["retained"] == 0
+
+
+def test_calc_roi_reports_targeted_and_reached():
+    # reach<1: targeted stays the audience, reached is the contacted cohort.
+    resp = calc_roi(100, 0.25, 100000, 800, reach=0.5)
+    assert resp["targeted"] == 100 and resp["reached"] == 50
+    assert resp["retained"] == 12.5 and resp["cost"] == 40000
+    rows = scenarios(resp, 0.25)
+    # Scenarios scale the reached cohort, not the raw audience.
+    assert rows["expected"]["retained"] == 12.5
+
+
+def test_expected_roi_zero_cost_is_zero():
+    assert expected_roi_value(0.02, 200000, 0) == 0.0
+    assert expected_roi_value(0.25, 100000, 800) > 0
+
+
+def test_train_single_class_does_not_500(client):
+    # Banking-style CSVs can be label-0-only; retrain must not crash.
+    headers, _ = _fresh_tenant_headers(client)
+    one_class = (
+        "name,age,income,tenure_months,region,avg_balance,txn_freq,avg_txn\n"
+        + "".join(f"Single {i},40,800000,24,Mumbai,150000,8,4000\n" for i in range(55))
+    )
+    up = client.post("/api/data/upload", headers=headers,
+                     files={"f": ("bank.csv", one_class.encode())})
+    assert up.status_code == 200, up.text
+    resp = client.post("/api/predictions/retrain", headers=headers)
+    assert resp.status_code in (200, 400)  # graceful skip or rescore, never 500
+    assert resp.status_code != 500
 
 
 def test_calc_roi_zero_audience_scenarios(client, bank_admin):

@@ -61,8 +61,9 @@ module.exports = {
         cream: "#F4F8FF",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["var(--font-jbmono)", "ui-monospace", "SFMono-Regular", "monospace"],
+        sans: ["var(--font-sans)", "var(--font-inter)", "Inter", "Plus Jakarta Sans", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+        display: ["var(--font-sans)", "var(--font-inter)", "Inter", "Plus Jakarta Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-jbmono)", "JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       borderRadius: {
         xl: "1rem",

@@ -17,13 +17,14 @@ Base.metadata.create_all(engine)
 app = FastAPI(title="RetainIQ API", version="1.0.0",
               description="Retention & ROI intelligence — predictions are estimates, not financial guarantees.")
 
-# FIX (S03): fail-loud on default JWT secret in production. Tests/dev keep the fallback
+# FIX (S03): fail-loud on default/weak JWT secret in production. Tests/dev keep the fallback
 # with a warning so the suite runs without env setup.
 _JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")  # nosec: B105 - dev-only fallback; prod refuses to start (see below)
-if _JWT_SECRET == "dev-secret-change-me":  # nosec: B105 - comparing against dev default to refuse prod start
+_WEAK_SECRETS = {"dev-secret-change-me", "change-me", "change-me-to-a-long-random-string-min-64-hex-chars", ""}
+if _JWT_SECRET.strip() in _WEAK_SECRETS or len(_JWT_SECRET.strip()) < 32:  # nosec: B105 - comparing against dev defaults to refuse prod start
     if os.getenv("RETAINIQ_ENV", "dev").lower().startswith("prod"):
-        raise RuntimeError("REFUSING TO START: set a strong JWT_SECRET in production")
-    log.warning("JWT_SECRET is the dev default — set a long random value via env (see .env.example)")
+        raise RuntimeError("REFUSING TO START: set a strong JWT_SECRET (>=32 chars) in production")
+    log.warning("JWT_SECRET is weak or the dev default — set a long random value via env (see .env.example)")
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -41,6 +42,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 app.add_middleware(SecurityHeadersMiddleware)
 
 origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()]
+if "*" in origins:
+    log.warning("CORS_ORIGINS contains '*' with allow_credentials=True — browsers will reject it. Set explicit frontend origin(s).")
+    origins = [o for o in origins if o != "*"] or ["http://localhost:3000"]
 app.add_middleware(CORSMiddleware, allow_origins=origins,
                    allow_credentials=True,
                    # FIX (S10): explicit method/header allow-list instead of ["*"] so a

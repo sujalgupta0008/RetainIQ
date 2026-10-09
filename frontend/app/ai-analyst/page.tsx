@@ -14,11 +14,12 @@ export default function AIAnalyst() {
   async function ask(text: string) {
     if (!text.trim() || busy) return;
     setBusy(true);
+    const q = text;
     try {
-      const resp = await api("/api/ai/ask", { method: "POST", body: JSON.stringify({ question: text }) });
-      setChat([{ q: text, a: resp.answer }, ...chat]);
+      const resp = await api("/api/ai/ask", { method: "POST", body: JSON.stringify({ question: q }) });
+      setChat((prev) => [{ q, a: resp.answer }, ...prev]);
       setQuestion("");
-    } catch (e: any) { setChat([{ q: text, a: "Error: " + e.message }, ...chat]); }
+    } catch (e: any) { setChat((prev) => [{ q, a: "Error: " + e.message }, ...prev]); }
     finally { setBusy(false); }
   }
   return (

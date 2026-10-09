@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { inr, num, pct } from "@/lib/format";
-import { Card, MetricCard, Loading, Field, PageHeader, Button, Badge, ChartTooltip, chartColors, ChartGradients } from "@/components/ui";
+import { Card, MetricCard, Loading, Err, Field, PageHeader, Button, Badge, ChartTooltip, chartColors, ChartGradients, EmptyState } from "@/components/ui";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { useRouter } from "next/navigation";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
@@ -11,13 +11,15 @@ export default function ROI() {
   const router = useRouter();
   const [filters, setFilters] = useState({ min_proba: 0.5, min_clv: 50000, intervention_cost: 1000, success_rate: 0.28, reach: 1.0 });
   const [result, setResult] = useState<any>(null);
+  const [err, setErr] = useState("");
   const update = (k: string, v: number) => setFilters({ ...filters, [k]: v });
   useEffect(() => {
     const timer = setTimeout(() => {
-      api("/api/roi/simulate", { method: "POST", body: JSON.stringify(filters) }).then(setResult).catch(() => {});
+      api("/api/roi/simulate", { method: "POST", body: JSON.stringify(filters) }).then((r) => { setResult(r); setErr(""); }).catch((e) => setErr(e.message));
     }, 300);
     return () => clearTimeout(timer);
   }, [JSON.stringify(filters)]);
+  if (err && !result) return <Err msg={err} retry={() => { setErr(""); setResult(null); }} />;
   if (!result) return <Loading msg="Loading simulator…" />;
   const scenarios = [
     { name: "Conservative", ...result.scenarios.conservative },
@@ -49,14 +51,18 @@ export default function ROI() {
               <Field label={`Campaign reach: ${(filters.reach * 100).toFixed(0)}%`}>
                 <input type="range" min={0.2} max={1} step={0.05} value={filters.reach} onChange={(e) => update("reach", Number(e.target.value))} className={slider} aria-label="Reach" />
               </Field>
-              <p className="text-xs" style={{ color: "var(--text-2)" }}>Audience: <b className="tnum">{num(result.audience)}</b> customers · avg CLV {inr(result.avg_clv)} · break-even success {pct(result.break_even_rate)}</p>
+              <p className="text-xs" style={{ color: "var(--text-2)" }}>Audience: <b className="tnum">{num(result.audience)}</b> customers · avg CLV {inr(result.avg_clv)} · break-even success {result.avg_clv > 0 ? pct(result.break_even_rate) : "—"}</p>
             </div>
           </Card>
         </Reveal>
+        {err && <p className="text-xs" style={{ color: "var(--text-3)" }}>Last update failed: {err} — showing previous results.</p>}
+        {result.audience === 0 && (
+          <Card><EmptyState title="No customers match these filters" hint="Lower the churn threshold or minimum CLV to build an audience." /></Card>
+        )}
         <div className="space-y-4">
           <Stagger className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {[
-              { label: "Customers targeted", value: `${num(result.targeted)}` },
+              { label: "Customers targeted", value: `${num(result.reached ?? result.targeted)}` },
               { label: "Expected retained", value: `${num(Math.round(result.retained))}` },
               { label: "Campaign cost", value: inr(result.cost) },
               { label: "Revenue protected", value: inr(result.revenue) },

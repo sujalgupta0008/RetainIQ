@@ -26,19 +26,26 @@ def get_model():
         print("xgboost not available, using HistGradientBoostingClassifier fallback")
         return HistGradientBoostingClassifier(max_iter=300, learning_rate=0.06, random_state=42)
 
-def main():
+def main(tenant_id: int | None = None):
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     from backend.database import SessionLocal
     from backend.models import CustomerFeature
     db = SessionLocal()
-    rows = db.query(CustomerFeature).all()
+    q = db.query(CustomerFeature)
+    if tenant_id is not None:
+        q = q.filter_by(tenant_id=tenant_id)
+    rows = q.all()
     if len(rows) < 50:
         print("Not enough data to train (need 50+), skipping.")
         return
     X = pd.DataFrame([{**r.f} for r in rows])[FEATS].fillna(0)
     y = np.array([r.label for r in rows])
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    if len(set(y.tolist())) < 2:
+        print("Not enough label variation to train (need both churned and retained examples), skipping.")
+        return
+    stratify = y if len(set(y.tolist())) >= 2 and min((y == 0).sum(), (y == 1).sum()) >= 2 else None
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=stratify)
     scaler = StandardScaler().fit(X_train)
     baseline = LogisticRegression(max_iter=1000).fit(scaler.transform(X_train), y_train)
     model = get_model().fit(scaler.transform(X_train), y_train)

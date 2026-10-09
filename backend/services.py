@@ -50,6 +50,17 @@ def calc_clv(avg_balance, annual_txn_vol, product_count, complaints_1y, tenure_m
 def calc_rar(churn_proba, clv) -> float:
     return round(float(churn_proba)*float(clv), 2)
 
+def expected_roi_value(success: float, clv: float, cost: float) -> float:
+    """Expected ROI for a single recommendation. Zero-cost actions have no
+    incremental spend, so ROI is defined as 0.0 instead of success*CLV/1."""
+    success = max(0.0, float(success or 0.0))
+    clv = max(0.0, float(clv or 0.0))
+    cost = max(0.0, float(cost or 0.0))
+    if cost <= 0:
+        return 0.0
+    return round((success * clv - cost) / cost, 3)
+
+
 def calc_roi(targeted: int, success_rate: float, avg_value: float, unit_cost: float, reach: float = 1.0) -> dict:
     """Central ROI engine. All estimates labeled by callers."""
     # Clamp stale-client values so outputs stay sane; schemas enforce the same bounds.
@@ -65,15 +76,18 @@ def calc_roi(targeted: int, success_rate: float, avg_value: float, unit_cost: fl
     net = revenue - cost
     roi = (net/cost) if cost > 0 else 0.0
     break_even = (unit_cost/avg_value) if avg_value > 0 else 1.0
-    return {"targeted": reached, "retained": round(retained,1), "cost": round(cost,2),
+    return {"targeted": targeted, "reached": reached, "retained": round(retained,1), "cost": round(cost,2),
            "revenue": round(revenue,2), "net": round(net,2),
            "roi": round(roi,4), "roi_pct": round(roi*100,1),
            "break_even_rate": round(break_even,4)}
 
 def scenarios(base: dict, success_rate: float) -> dict:
+    # Base audience is the actually-reached cohort (back-compat: older payloads
+    # only carried "targeted" as reached).
+    audience = base.get("reached", base.get("targeted", 0))
     def row(mult):
         rate = min(0.9, success_rate*mult)
-        retained = base["targeted"]*rate
+        retained = audience*rate
         revenue = retained*(base["revenue"]/base["retained"] if base["retained"] else 0)
         net = revenue - base["cost"]
         roi = net/base["cost"] if base["cost"] else 0

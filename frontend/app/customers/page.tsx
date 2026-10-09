@@ -16,12 +16,18 @@ export default function Customers() {
   const [sort, setSort] = useState("rar");
   const [page, setPage] = useState(1);
 
-  const load = () => {
-    const params = new URLSearchParams({ search, risk, segment, sort, page: String(page), page_size: "20" });
+  const load = (overrides?: { search?: string; page?: number }) => {
+    const s = overrides?.search ?? search;
+    const p = overrides?.page ?? page;
+    const params = new URLSearchParams({ search: s, risk, segment, sort, page: String(p), page_size: "20" });
     api(`/api/customers?${params}`).then(setData).catch((e) => setErr(e.message));
   };
   useEffect(() => { setErr(""); load(); }, [risk, segment, sort, page]);
-  useEffect(() => { const t = setTimeout(() => { setPage(1); setErr(""); load(); }, 400); return () => clearTimeout(t); }, [search]);
+  useEffect(() => {
+    const t = setTimeout(() => { setPage(1); setErr(""); load({ search, page: 1 }); }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   return (
     <div className="space-y-4">

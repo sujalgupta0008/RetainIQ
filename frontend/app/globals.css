@@ -51,6 +51,7 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px;
+  -webkit-text-size-adjust: 100%;
 }
 /* Global scale: ~67–75% look at 100% zoom on desktop. rem-based Tailwind
    spacing/typography scales together. No CSS zoom/scale transforms. */
@@ -66,9 +67,53 @@ body {
     radial-gradient(760px 420px at 8% 0%, rgba(20, 184, 166, 0.06), transparent 65%),
     linear-gradient(180deg, #f4f8ff 0%, #ffffff 100%);
   color: var(--text-1);
-  font-feature-settings: "cv11", "ss01";
+  /* Professional SaaS type system — Plus Jakarta Sans primary, Inter fallback */
+  font-family: var(--font-sans), var(--font-inter), "Inter", "Plus Jakarta Sans",
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv11", "ss01", "ss03", "calt";
+  font-optical-sizing: auto;
+  letter-spacing: -0.011em;
+  line-height: 1.55;
+  font-weight: 400;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings — tight, confident, professional */
+h1, h2, h3, h4, h5, h6,
+.page-title, .hero-title {
+  font-family: var(--font-sans), var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.022em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  letter-spacing: inherit;
+}
+
+strong, b {
+  font-weight: 650;
+  letter-spacing: -0.008em;
+}
+
+p, li, td, dd {
+  text-wrap: pretty;
+}
+
+/* Eyebrow labels + table headers — professional micro-type */
+.text-eyebrow, thead th {
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-jbmono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: normal;
+  letter-spacing: 0;
 }
 
 .dark body {
@@ -155,8 +200,8 @@ body {
 }
 
 .page-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.022em;
   color: var(--text-1);
   font-size: 1.15rem;
   line-height: 1.2;
@@ -167,11 +212,15 @@ body {
 /* fluid hero headline for login */
 .hero-title {
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.04;
   font-size: clamp(1.9rem, 1.2rem + 2.2vw, 3rem);
 }
-.tnum { font-variant-numeric: tabular-nums; }
+.tnum {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum", "cv11", "ss01";
+  letter-spacing: -0.005em;
+}
 
 /* avatar: blue gradient ring */
 .avatar-orb {

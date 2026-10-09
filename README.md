@@ -67,16 +67,16 @@ auto-normalized). Health check: `GET /api/health`.
 ## Deploy (Render backend + Vercel frontend)
 
 1. Push this repo to GitHub (done). `render.yaml` defines API + Postgres.
-2. Render → New → Blueprint → repo select karo. `JWT_SECRET` auto-generate
-   hoga; `CORS_ORIGINS` me apna Vercel URL dalo
-   (`https://retainiq.vercel.app` placeholder badal dena); optional
-   `GOOGLE_CLIENT_ID` set karo.
-3. Vercel → New Project → `frontend/` select karo. Env vars:
-   `NEXT_PUBLIC_API_URL=https://<tumhara-render-api>.onrender.com`,
+2. Render → New → Blueprint → select the repo. `JWT_SECRET` is auto-generated;
+   set `CORS_ORIGINS` to your Vercel URL
+   (replace the `https://retainiq-frontend-seven.vercel.app` placeholder); optionally
+   set `GOOGLE_CLIENT_ID`.
+3. Vercel → New Project → select `frontend/`. Environment variables:
+   `NEXT_PUBLIC_API_URL=https://<your-render-api>.onrender.com`,
    `NEXT_PUBLIC_GOOGLE_CLIENT_ID=<same-id>` (optional).
-4. Google Cloud Console → Client ID → Authorized JavaScript origins me
-   Render + Vercel dono URLs add karo.
-5. Verify: `<api>/docs` khule, Vercel login par demo + Google dono chale.
+4. Google Cloud Console → Client ID → add both the Render and Vercel URLs
+   to Authorized JavaScript origins.
+5. Verify: `<api>/docs` loads, and both demo and Google login work on Vercel.
 
 ## Folder layout
 

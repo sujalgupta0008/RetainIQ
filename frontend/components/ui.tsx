@@ -172,7 +172,10 @@ export function Badge({ tone, children, className }: {
 }
 
 /* 4-level risk scale: Very High #EF4444 · High #F97316 · Medium #F59E0B · Low #22C55E */
-export function RiskBadge({ band }: { band: string }) {
+export function RiskBadge({ band }: { band?: string | null }) {
+  if (!band) return (
+    <span className="inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full border border-dashed" style={{ color: "var(--text-3)" }}>Unknown</span>
+  );
   if (band === "Very High") return (
     <span className="inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full border bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25">Very High</span>
   );

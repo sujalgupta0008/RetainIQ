@@ -17,7 +17,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     volumes:
       # Persist the SQLite file between restarts (unused for Postgres).
-      - retainiq-data:/app
+      - retainiq-data:/app/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 30s
@@ -38,7 +38,7 @@ services:
       PORT: 3000
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   retainiq-data:

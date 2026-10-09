@@ -28,7 +28,7 @@ def summary(user: M.User = Depends(current_user), db: Session = Depends(get_db))
     return {"total": total, "high": high, "medium": medium, "low": low,
         "revenue_at_risk": round(rar, 2), "value_at_risk": round(clv_risk, 2),
         "expected_protected": round(revenue, 2), "campaign_cost": round(cost, 2),
-        "expected_roi_pct": round((revenue-cost)/max(1, cost)*100, 1),
+        "expected_roi_pct": round((revenue-cost)/cost*100, 1) if cost > 0 else 0.0,
         "retention_budget": 1000000, "customers_targeted": targeted,
         "expected_retained": retained, "campaigns": len(camps)}
 

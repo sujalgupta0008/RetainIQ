@@ -32,6 +32,33 @@ def status(u: M.User = Depends(current_user), db: Session = Depends(get_db)):
             "features": db.query(M.CustomerFeature).filter_by(tenant_id=u.tenant_id).count()}
 
 
+def _clear_tenant_data(db, tenant_id: int) -> int:
+    """Delete all customer-owned rows for a tenant. Returns customers removed."""
+    # Order matters (children before parents, no DB cascades).
+    count = db.query(M.Customer).filter_by(tenant_id=tenant_id).count()
+    # Campaign / experiment sidecars first (reference customers + campaigns).
+    db.query(M.CampaignTarget).filter_by(tenant_id=tenant_id).delete(synchronize_session=False)
+    db.query(M.ExperimentResult).filter_by(tenant_id=tenant_id).delete(synchronize_session=False)
+    db.query(M.Experiment).filter_by(tenant_id=tenant_id).delete(synchronize_session=False)
+    db.query(M.Campaign).filter_by(tenant_id=tenant_id).delete(synchronize_session=False)
+    # Per-customer derived + raw rows.
+    for model in [M.Recommendation, M.CustomerValue, M.ChurnPrediction, M.CustomerFeature,
+                  M.Interaction, M.Transaction, M.CustomerProduct, M.Account]:
+        db.query(model).filter_by(tenant_id=tenant_id).delete(synchronize_session=False)
+    db.query(M.Customer).filter_by(tenant_id=tenant_id).delete(synchronize_session=False)
+    db.flush()
+    return count
+
+
+@r.delete("/clear")
+def clear(u: M.User = Depends(require_role("admin", "manager")), db: Session = Depends(get_db)):
+    from ..services import audit as _audit
+    removed = _clear_tenant_data(db, u.tenant_id)
+    _audit(db, u.tenant_id, u.id, "clear", f"removed={removed}")
+    db.commit()
+    return {"ok": True, "removed": removed}
+
+
 def _read_csv(f: UploadFile) -> pd.DataFrame:
     # Filename check is advisory (browsers may omit it); content is validated by parsing.
     name = (f.filename or "").lower()
@@ -77,14 +104,18 @@ def preview(f: UploadFile, u: M.User = Depends(current_user)):
 
 
 @r.post("/upload", dependencies=[Depends(rate_limit(10, 60))])
-def upload(f: UploadFile, u: M.User = Depends(require_role("admin", "manager", "analyst")), db: Session = Depends(get_db)):
+def upload(f: UploadFile, replace: bool = False, u: M.User = Depends(require_role("admin", "manager", "analyst")), db: Session = Depends(get_db)):
     from ..services import (features_from_state, calc_clv, calc_rar, band, pick_action, priority_of,
-                            explain_fallback, ACTIONS)
+                            explain_fallback, expected_roi_value, ACTIONS)
     from ..ml.infer import predict_proba
     df = _read_csv(f)
     dtype, records, _, issues = normalize_customer_csv(df)
     if dtype == "unknown":
         raise HTTPException(400, "Unrecognized CSV schema — see /preview for details.")
+    replaced = 0
+    if replace:
+        # New CSV = new workspace: drop demo/old customers first so only new data remains.
+        replaced = _clear_tenant_data(db, u.tenant_id)
     existing = {c.name for c in db.query(M.Customer.name).filter_by(tenant_id=u.tenant_id).all()}
     # pass 1: insert customers + features + accounts
     new, errors = [], list(issues)
@@ -139,11 +170,11 @@ def upload(f: UploadFile, u: M.User = Depends(require_role("admin", "manager", "
             sc, pri = priority_of(p, clv, rar, ACTIONS[act]["cost"], succ, cmax, rmax)
             db.add(M.Recommendation(tenant_id=u.tenant_id, customer_id=cid, action=act,
                    cost=ACTIONS[act]["cost"], success=succ,
-                   expected_roi=round((succ * clv - ACTIONS[act]["cost"]) / max(1, ACTIONS[act]["cost"]), 3),
+                   expected_roi=expected_roi_value(succ, clv, ACTIONS[act]["cost"]),
                    reason=reason, priority=pri, priority_score=sc))
     audit(db, u.tenant_id, u.id, "upload",
-          f"type={dtype} added={len(new)} rejected={len(df) - len(new)}")
+          f"type={dtype} added={len(new)} rejected={len(df) - len(new)} replaced={replaced}")
     db.commit()
     return {"dataset_type": dtype, "added": len(new),
-            "rejected": len(df) - len(new), "errors": errors[:20],
+            "rejected": len(df) - len(new), "errors": errors[:20], "replaced": replaced,
             "next": "Review preview counts, then press Retrain so the model learns the new churn labels."}

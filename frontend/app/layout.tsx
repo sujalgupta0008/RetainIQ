@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider, ThemeScript } from "@/lib/theme";
 import AppShell from "@/components/AppShell";
 
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const jbmono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jbmono", display: "swap" });
 
@@ -15,7 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="light" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jbmono.variable} font-sans antialiased`}>
+      <body className={`${jakarta.variable} ${inter.variable} ${jbmono.variable} font-sans antialiased`}>
         <ThemeScript />
         <div className="canvas-bg" aria-hidden />
         <div className="canvas-grid" aria-hidden />

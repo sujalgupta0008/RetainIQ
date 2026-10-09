@@ -12,7 +12,7 @@ from backend.database import engine, SessionLocal, Base
 from backend import models as M
 from backend.ml.infer import predict_proba
 from backend.services import (calc_clv, calc_rar, band, priority_of, pick_action,
-    explain_fallback, hash_pw, ACTIONS)
+    explain_fallback, hash_pw, expected_roi_value, ACTIONS)
 
 SEED = int(os.getenv("SEED", "42"))
 FIRST = ["Aarav","Priya","Rohan","Sneha","Arjun","Meera","Kabir","Ananya","Vikram","Divya","Aditya","Kavya","Nikhil","Riya","Suresh","Lakshmi","Manoj","Pooja","Kiran","Anil"]
@@ -176,7 +176,7 @@ def run(reset=False):
             score, priority = priority_of(proba, clv, rar, ACTIONS[action]["cost"], success, clv_max, rar_max)
             db.add(M.Recommendation(tenant_id=tenant_id, customer_id=row.customer_id, action=action,
                    cost=ACTIONS[action]["cost"], success=success,
-                   expected_roi=round((success*clv - ACTIONS[action]["cost"])/max(1, ACTIONS[action]["cost"]), 3),
+                   expected_roi=expected_roi_value(success, clv, ACTIONS[action]["cost"]),
                    reason=reason, priority=priority, priority_score=score))
         db.flush()
         customers = db.query(M.Customer).filter_by(tenant_id=tenant_id).all()

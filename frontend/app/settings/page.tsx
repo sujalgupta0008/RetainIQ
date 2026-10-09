@@ -16,6 +16,7 @@ export default function Settings() {
   };
   useEffect(load, []);
   async function switchTenant() {
+    if (me?.role !== "admin") { setMsg("Tenant switching requires an admin account. Please sign in as an admin to use this demo action."); return; }
     const id = Number(tenantId);
     if (!Number.isInteger(id) || id <= 0) { setMsg("Enter a valid numeric Tenant ID."); return; }
     try {
@@ -41,9 +42,10 @@ export default function Settings() {
           </div>
           <p className="text-xs" style={{ color: "var(--text-3)" }}>All data on screen is synthetic demo data. AI provider: auto (LLM if key set, else deterministic fallback).</p>
           <div className="flex gap-2 mt-3">
-            <Input className="!max-w-32" placeholder="Tenant ID" aria-label="Tenant ID" value={tenantId} onChange={(e) => setTenantId(e.target.value)} />
-            <Button variant="secondary" onClick={switchTenant}>Switch tenant (demo)</Button>
+            <Input className="!max-w-32" placeholder="Tenant ID" aria-label="Tenant ID" value={tenantId} onChange={(e) => setTenantId(e.target.value)} disabled={me?.role !== "admin"} />
+            <Button variant="secondary" onClick={switchTenant} disabled={me?.role !== "admin"}>Switch tenant (demo)</Button>
           </div>
+          {me?.role !== "admin" && <p className="text-xs mt-2" style={{ color: "var(--text-3)" }}>Signed in as {me?.role} — tenant switching is admin-only.</p>}
           {msg && <p className="text-[13px] mt-2" style={{ color: "var(--text-2)" }}>{msg}</p>}
         </Card>
       </Reveal>

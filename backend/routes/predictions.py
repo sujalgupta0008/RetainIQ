@@ -10,7 +10,7 @@ from .. import models as M
 from ..deps import current_user, require_role
 from ..ml.infer import predict_proba
 from ..ml.train import main as train_main
-from ..services import band, explain_fallback, calc_clv, calc_rar, pick_action, priority_of, ACTIONS, audit
+from ..services import band, explain_fallback, calc_clv, calc_rar, pick_action, priority_of, expected_roi_value, ACTIONS, audit
 
 r = APIRouter(prefix="/api/predictions", tags=["predictions"])
 
@@ -28,7 +28,7 @@ def retrain(user: M.User = Depends(require_role("admin", "manager", "analyst")),
     # FIX (B02): empty-tenant guard — previously max() of empty sequence raised 500.
     if not rows:
         raise HTTPException(400, "No customer features for this workspace yet — upload data first")
-    train_main()
+    train_main(tenant_id=user.tenant_id)
     df = pd.DataFrame([x.f for x in rows]); medians = {c: float(df[c].median()) for c in df.columns}
     scored = {}
     for row in rows:
@@ -54,7 +54,7 @@ def retrain(user: M.User = Depends(require_role("admin", "manager", "analyst")),
         if not reco:
             continue
         reco.action, reco.cost, reco.success = action, ACTIONS[action]["cost"], success
-        reco.expected_roi = round((success*clv - ACTIONS[action]["cost"])/max(1, ACTIONS[action]["cost"]), 3)
+        reco.expected_roi = expected_roi_value(success, clv, ACTIONS[action]["cost"])
         reco.reason, reco.priority, reco.priority_score = reason, priority, score
     audit(db, user.tenant_id, user.id, "retrain", f"{len(rows)} customers"); db.commit()
     return {"ok": True, "updated": len(rows)}
