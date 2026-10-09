@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <body className={`${inter.variable} ${jbmono.variable} font-sans antialiased`}>
         <ThemeScript />
         <div className="canvas-bg" aria-hidden />

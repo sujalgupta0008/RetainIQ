@@ -1,5 +1,27 @@
-# RetainIQ UI Redesign — Progress Tracker (COMPLETE)
-Branch: `feat/ui-redesign` | Stack: Next.js 14 App Router + Tailwind 3 + recharts + lucide-react
+# RetainIQ UI Re-theme — Progress Tracker
+Branch: `feat/ui-retheme` (from `feat/ui-redesign`) · Reference: light blue/navy SaaS dashboard
+Prior redesign report: `docs/UI_REPORT.md` (will be rewritten in Phase 5).
+
+## Phase 1 — Tokens (DONE)
+Light is DEFAULT (`lib/theme.tsx` default + anti-flash script + `<html class=light>`); dark =
+deep navy `#0A142E→#0F2350` via same persisted toggle.
+- Canvas light: `#F4F8FF→#FFFFFF` + blue radial glow + subtle dot pattern (`canvas-grid` is now
+  dots, masked). Dark keeps dot pattern in slate.
+- Cards: white `#surface`, 1px `#E6ECF5`, layered blue-tinted shadow; dark = navy glass.
+- Primary `#2563EB` (hover `#1D4ED8`), gradient `#2563EB→#3B82F6`; teal `#14B8A6` success/retention.
+  Headings navy `#0B1A3A`, body `#475569`, muted `#94A3B8`.
+- Risk scale 4-level everywhere: Very High `#EF4444` · High `#F97316` · Medium `#F59E0B` ·
+  Low `#22C55E` (`RiskBadge` + `chartColors.risk` + avatar halos). Backend bands stay
+  Low/Medium/High; Very High is display-only for proba ≥ 0.8 (dashboard priority list).
+- Charts: blue `#3B82F6` main, teal secondary, light grid `#EEF2F7`, gradient fills → transparent.
+- Kept token names (`brand`, `risk`, `semantic`, shadows) so shared components auto-adapt;
+  `gradient-text` is now blue→teal, `glass` is white/blue-shadow in light.
+- Build ✅ tsc ✅ (no visual page changes yet — old pink gradients in pages die in Phase 2–4).
+
+## Phase 2 — Dashboard recomposition (TODO)
+## Phase 3 — 3D/motion light version (TODO)
+## Phase 4 — Re-theme remaining pages (TODO)
+## Phase 5 — Verify (TODO)
 
 ## Phase 1 — Audit (DONE)
 See table below. `docs/screenshots/before/` holds a README (no automated befores — backend auth

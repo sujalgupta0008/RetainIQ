@@ -10,12 +10,12 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(KEY) as Theme | null;
-      const initial: Theme = saved === "light" || saved === "dark" ? saved : "dark";
+      const initial: Theme = saved === "light" || saved === "dark" ? saved : "light";
       setTheme(initial);
       document.documentElement.classList.toggle("dark", initial === "dark");
       document.documentElement.classList.toggle("light", initial === "light");
@@ -45,6 +45,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 /** Inline in <head> to avoid theme flash before hydration. */
 export function ThemeScript() {
-  const code = `(function(){try{var t=localStorage.getItem('${KEY}');if(t!=='light'&&t!=='dark')t='dark';document.documentElement.classList.toggle('dark',t==='dark');document.documentElement.classList.toggle('light',t==='light');}catch(e){document.documentElement.classList.add('dark')}})();`;
+  const code = `(function(){try{var t=localStorage.getItem('${KEY}');if(t!=='light'&&t!=='dark')t='light';document.documentElement.classList.toggle('dark',t==='dark');document.documentElement.classList.toggle('light',t==='light');}catch(e){document.documentElement.classList.add('light')}})();`;
   return <script dangerouslySetInnerHTML={{ __html: code }} />;
 }
