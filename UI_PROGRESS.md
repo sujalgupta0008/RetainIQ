@@ -38,7 +38,18 @@ Content is ~1068px tall fixed (grid + hero + card don't shrink). Only 1080p fits
 - Result: 8/8 viewports scrollHeight == innerHeight (incl. 390x844).
 - Build ✅ tsc ✅.
 
-## Phase 4 — Verify (TODO)
+## Phase 4 — Verify (DONE)
+- Login no-scroll asserted programmatically (scrollHeight <= innerHeight):
+  1920x1080: 1080<=1080 · 1536x864: 864<=864 · 1440x900: 900<=900 ·
+  1366x768: 768<=768 · 1280x720: 720<=720 — all PASS, submit button in viewport each time.
+- Zero console/page errors on all login captures; demo login still lands on dashboard.
+- App pages at 1440x900 + 1366x768 (dashboard, customers, roi-simulator, risk, settings):
+  all load clean, no error states, layout balanced after scale change (screenshots checked).
+- `npm run build` ✅ 17/17 · `tsc --noEmit` ✅ · no eslint config / `lint` script in repo
+  (same as baseline) · backend **65 passed** (= baseline).
+- Shots: `docs/screenshots/after-fit/` (5 login + 2 dashboard). Report section added.
+- Pre-existing quirk (noted, not introduced): `.next` sometimes goes stale (`./682.js`)
+  when servers are swapped mid-build — clean rebuild fixes; no code impact.
 
 ## Phase 1 — Tokens (DONE)
 Light is DEFAULT (`lib/theme.tsx` default + anti-flash script + `<html class=light>`); dark =

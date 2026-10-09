@@ -92,3 +92,19 @@ R3F/three chunks eliminated (were dynamic-only on login). No perf collapse (belo
    `POST /api/auth/google` only when `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is set; otherwise shows an
    honest “not connected” message. Real Google login needs backend OAuth + client ID (out of
    UI scope) — verified: message shows, email/demo flows unchanged and land on dashboard.
+
+## 9. Login-fit pass (fix/login-fit, 2026-10-08)
+Goal: 100% zoom looks like the old 67% zoom; login never scrolls on desktop.
+- **Measure:** only 1920x1080 fit before (content fixed ~1068px; 1366x768 overflowed 300px).
+- **Global scale:** `html font-size 16px` below lg; at ≥1024px
+  `clamp(13px, 100vw/105, 14.5px)` — rem-based Tailwind scales together, no zoom/transform.
+  Plus proportional cuts (page titles, StatCard/KPI sizes, fluid hero title, Card padding,
+  tables fixed 13px so body text stays ≥12px).
+- **Login one-screen:** `100dvh` + `overflow:hidden` on lg, 2-col grid; hero capped
+  `clamp(180px,28vh,320px)` with fade (never overlaps card); compact card (≈40px inputs);
+  hero+chips hidden under 760px height; hero hidden and chips/CTA row hidden below md on
+  mobile so the form fits one screen.
+- **Verify:** scrollHeight<=innerHeight asserted on 1920/1536/1440/1366/1280 (all exact-fit,
+  submit in viewport, zero console errors); dashboard/customers/simulator/risk/settings clean
+  at 1440x900 + 1366x768; build 17/17, tsc clean, backend 65 passed; shots in
+  `docs/screenshots/after-fit/` (before: `before-fit/`).
