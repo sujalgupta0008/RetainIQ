@@ -1,4 +1,4 @@
-"""Analyst answers ANY question type from real aggregates — never a dead end."""
+"""Analyst fallback answers from canned aggregates."""
 from backend.services import analyst_fallback, _parse_money, _parse_topn
 
 CTX = {
@@ -19,23 +19,23 @@ CTX = {
 }
 
 def test_greeting_and_help():
-    a = analyst_fallback("hello", CTX)
-    assert "segment" in a and "budget" in a or "try" in a.lower()
+    ans = analyst_fallback("hello", CTX)
+    assert "segment" in ans and "budget" in ans or "try" in ans.lower()
 
 def test_custom_budget_amount():
-    a = analyst_fallback("How should we spend ₹5 lakh?", CTX)
-    assert "500,000" in a and "Aarav Sharma" in a  # real number + real name, not canned 10L
+    ans = analyst_fallback("How should we spend ₹5 lakh?", CTX)
+    assert "500,000" in ans and "Aarav Sharma" in ans  # real number + real name, not canned 10L
 
 def test_top_n_parsing():
     assert _parse_topn("show top 3 customers") == 3
-    a = analyst_fallback("list top 2 customers", CTX)
-    assert "Priya Nair" in a
+    ans = analyst_fallback("list top 2 customers", CTX)
+    assert "Priya Nair" in ans
 
 def test_segments_interventions_campaigns_products():
     assert "HNI" in analyst_fallback("Which segment is riskiest?", CTX)
     assert "rm call" in analyst_fallback("Compare interventions", CTX)
-    c = analyst_fallback("How did campaigns perform?", CTX)
-    assert "Festive Win-back" in c and "120.5%" in c
+    resp = analyst_fallback("How did campaigns perform?", CTX)
+    assert "Festive Win-back" in resp and "120.5%" in resp
     assert "Personal Loan" in analyst_fallback("Which product is riskiest?", CTX)
 
 def test_trend_value_model_counts_definitions():
@@ -52,13 +52,13 @@ def test_customer_detail():
         "explanation": "Risk high because complaints rose.", "clv": 250000.0, "rar": 217500.0,
         "balance": 300000.0, "products": 3, "action": "rm_call", "cost": 1000,
         "success": 0.3, "priority": "Critical"})
-    a = analyst_fallback('Why is customer "Aarav Sharma" at risk?', ctx)
-    assert "Aarav Sharma" in a and "87%" in a and "rm call" in a
+    ans = analyst_fallback('Why is customer "Aarav Sharma" at risk?', ctx)
+    assert "Aarav Sharma" in ans and "87%" in ans and "rm call" in ans
 
 def test_unknown_question_still_useful():
-    a = analyst_fallback("What should we do about branch timings next quarter?", CTX)
-    assert "Aarav Sharma" in a and "8,429,262" in a  # real numbers, suggestions, no dead end
-    assert len(a) > 100
+    ans = analyst_fallback("What should we do about branch timings next quarter?", CTX)
+    assert "Aarav Sharma" in ans and "8,429,262" in ans  # real numbers, suggestions, no dead end
+    assert len(ans) > 100
 
 def test_money_parsing():
     assert _parse_money("spend ₹10 lakh") == 1000000

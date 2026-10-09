@@ -1,9 +1,4 @@
-"""Security regression tests for audit fixes S01–S11.
-
-Each test is independent: cross-tenant checks use freshly registered tenants so the
-shared seeded workspaces are never mutated (except the admin switch test, which
-switches forth AND back within the test).
-"""
+"""Security regressions for audit fixes S01–S11. Tests are independent (fresh tenants)."""
 import io
 import uuid
 
@@ -24,10 +19,10 @@ def _register(client, email, password="StrongPass123", tenant=None, role="manage
     return client.post("/api/auth/register", json=body)
 
 
-# --- S02: registration hardening -------------------------------------------
+# S02: registration hardening
 
 def test_register_role_admin_clamped(client):
-    """Self-registration as admin must NOT grant admin (privilege escalation)."""
+    # Self-registration must not grant admin (privilege escalation).
     email = _unique("nobody")
     r = _register(client, email, role="admin")
     assert r.status_code == 200, r.text
@@ -67,14 +62,14 @@ def test_login_unknown_user_generic(client):
     assert r.status_code == 401
 
 
-# --- S01: tenant switch / isolation ----------------------------------------
+# S01: tenant switch / isolation
 
 def test_switch_non_admin_forbidden(client, bank_manager):
     assert client.post("/api/auth/switch?tenant_id=2", headers=bank_manager).status_code == 403
 
 
 def test_switch_admin_roundtrip(client, bank_admin):
-    """Admin switch works but must restore state; unknown tenants 404."""
+    # Admin switch works; unknown tenants 404. Switches back so fixtures keep home workspace.
     assert client.post("/api/auth/switch?tenant_id=999999", headers=bank_admin).status_code == 404
     me_before = client.get("/api/auth/me", headers=bank_admin).json()
     home = me_before["tenant_id"]
@@ -95,7 +90,7 @@ def test_me_hides_tenants_from_non_admin(client, bank_manager):
     assert client.get("/api/auth/me", headers=bank_manager).json()["all_tenants"] == []
 
 
-# --- input validation / caps ------------------------------------------------
+# input validation / caps
 
 def test_customers_invalid_risk_rejected(client, bank_admin):
     assert client.get("/api/customers?risk=CRITICAL", headers=bank_admin).status_code == 400
@@ -143,7 +138,7 @@ def test_upload_auth_and_schema(client, bank_admin):
 
 
 def test_upload_size_guard():
-    """_read_csv must refuse oversized payloads before pandas ever sees them."""
+    # _read_csv must refuse oversized payloads before pandas ever sees them.
     import asyncio
     from backend.routes.data import _read_csv, MAX_UPLOAD_BYTES
     big = io.BytesIO(b"a,b\n" + b"1,2\n" * ((MAX_UPLOAD_BYTES // 4) + 100))
@@ -157,7 +152,7 @@ def test_upload_size_guard():
 
 
 def test_rate_limiter_trips():
-    """Unit-test the limiter directly (no need to burn the shared login budget)."""
+    # Unit-test the limiter directly (no need to burn the shared login budget).
 
     class Req:
         client = type("C", (), {"host": "127.0.0.1"})()

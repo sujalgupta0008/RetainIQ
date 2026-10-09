@@ -1,6 +1,6 @@
-"""Shared pytest fixtures: isolated sqlite DB (test_audit.db), seeded once per session.
+"""Pytest fixtures: isolated sqlite DB (test_audit.db), seeded once per session.
 
-Sets DATABASE_URL before any backend import so the engine singleton points at the
+DATABASE_URL is set before any backend import so the engine points at the
 throwaway file and the real retainiq.db is never touched by tests.
 """
 import os
@@ -32,20 +32,20 @@ def client():
 @pytest.fixture(scope="session")
 def bank_admin(client):
     """Seeded Demo Bank admin (admin@demobank.in / demo123)."""
-    tok = client.post("/api/auth/login",
+    token = client.post("/api/auth/login",
                       json={"email": "admin@demobank.in", "password": "demo123"}).json()["token"]
-    return {"Authorization": f"Bearer {tok}"}
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture(scope="session")
 def fin_admin(client):
-    tok = client.post("/api/auth/login",
+    token = client.post("/api/auth/login",
                       json={"email": "admin@demofintech.in", "password": "demo123"}).json()["token"]
-    return {"Authorization": f"Bearer {tok}"}
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture(scope="session")
 def bank_manager(client):
-    tok = client.post("/api/auth/login",
+    token = client.post("/api/auth/login",
                       json={"email": "manager@demobank.in", "password": "demo123"}).json()["token"]
-    return {"Authorization": f"Bearer {tok}"}
+    return {"Authorization": f"Bearer {token}"}

@@ -1,10 +1,7 @@
-"""CSV import adapter: banking / telco / generic -> normalized RetainIQ customer rows.
+"""CSV adapter: banking / telco / generic -> normalized customer rows.
 
-Flow: uploaded CSV -> detect schema -> normalize -> validate -> insert ->
-derive 16 ML features -> predictions -> dashboard.
-
-Telco fields are DOMAIN-ADAPTED PROXIES (documented below), not real banking
-measurements. Deterministic: same file always yields same rows (no random calls).
+Telco money fields are domain-adapted proxies, not bank balances.
+Deterministic: same file always yields same rows.
 """
 import pandas as pd
 import numpy as np
@@ -12,8 +9,7 @@ import numpy as np
 BANKING_COLS = {"name", "age", "income", "tenure_months", "region",
                 "avg_balance", "txn_freq", "avg_txn"}
 
-# Telco -> RetainIQ feature map (proxies, see docstrings in _telco_record).
-# Preserved telco signal: tenure, monthly/total charges, service count,
+# Telco -> RetainIQ proxies. Preserved signal: tenure, charges, service count,
 # contract, support flags, payment method, churn score -> 16 ML features.
 TELCO_PREVIEW = [
     ("CustomerID", "Customer Name"),
@@ -27,16 +23,16 @@ TELCO_PREVIEW = [
 ]
 
 
-def _key(c: str) -> str:
-    return str(c).strip().lower()
+def _key(col: str) -> str:
+    return str(col).strip().lower()
 
 
-def _num(v, default: float = 0.0) -> float:
+def _num(value, default: float = 0.0) -> float:
     """Parse '$1,200.50' / '  ' / None safely; never returns NaN/inf."""
     try:
-        if v is None or (isinstance(v, float) and np.isnan(v)):
+        if value is None or (isinstance(value, float) and np.isnan(value)):
             return float(default)
-        s = str(v).replace("$", "").replace(",", "").strip()
+        s = str(value).replace("$", "").replace(",", "").strip()
         if s == "" or s.lower() in ("nan", "none", "null", "n/a"):
             return float(default)
         out = float(s)
@@ -49,11 +45,11 @@ def _num(v, default: float = 0.0) -> float:
 
 def _det(key: str, lo: int, hi: int) -> int:
     """Deterministic pseudo-value in [lo, hi] from a string key (stable across uploads)."""
-    return lo + (sum(ord(c) for c in str(key)) % max(1, hi - lo + 1))
+    return lo + (sum(ord(ch) for ch in str(key)) % max(1, hi - lo + 1))
 
 
-def _yes(v) -> bool:
-    return str(v).strip().lower() in ("yes", "1", "true", "y")
+def _yes(value) -> bool:
+    return str(value).strip().lower() in ("yes", "1", "true", "y")
 
 
 def detect_dataset_type(df: pd.DataFrame) -> str:
@@ -86,42 +82,42 @@ def _banking_record(row: dict) -> dict:
 
 def _telco_record(orig: dict) -> dict:
     """Deterministic telco -> banking-compatible row. Money fields are proxies."""
-    g = lambda *names: next((orig.get(n) for n in names if orig.get(n) is not None), "")
-    cid = str(g("CustomerID", "customerID", "customer_id")).strip()
-    tenure = int(max(0, min(120, _num(g("Tenure Months", "tenure months", "tenure"), 12))))
-    monthly = _num(g("Monthly Charges", "monthly charges", "monthlycharges"), 65.0)
-    total = _num(g("Total Charges", "total charges", "totalcharges"), monthly * max(1, tenure))
-    cltv = _num(g("CLTV", "cltv"), 0.0)
-    score = _num(g("Churn Score", "churn score", "churnscore"), 50.0)
-    senior = str(g("Senior Citizen", "senior citizen", "seniorcitizen")).strip() == "1"
-    contract = str(g("Contract", "contract")).strip() or "Month-to-month"
-    pay = str(g("Payment Method", "payment method", "paymentmethod")).strip()
-    internet = str(g("Internet Service", "internet service", "internetservice")).strip()
-    phone = _yes(g("Phone Service", "phone service", "phoneservice"))
-    online_yes = sum(_yes(g(c)) for c in
+    def get(*names):
+        return next((orig.get(n) for n in names if orig.get(n) is not None), "")
+    cid = str(get("CustomerID", "customerID", "customer_id")).strip()
+    tenure = int(max(0, min(120, _num(get("Tenure Months", "tenure months", "tenure"), 12))))
+    monthly = _num(get("Monthly Charges", "monthly charges", "monthlycharges"), 65.0)
+    total = _num(get("Total Charges", "total charges", "totalcharges"), monthly * max(1, tenure))
+    cltv = _num(get("CLTV", "cltv"), 0.0)
+    score = _num(get("Churn Score", "churn score", "churnscore"), 50.0)
+    senior = str(get("Senior Citizen", "senior citizen", "seniorcitizen")).strip() == "1"
+    contract = str(get("Contract", "contract")).strip() or "Month-to-month"
+    pay_method = str(get("Payment Method", "payment method", "paymentmethod")).strip()
+    internet = str(get("Internet Service", "internet service", "internetservice")).strip()
+    phone = _yes(get("Phone Service", "phone service", "phoneservice"))
+    online_yes = sum(_yes(get(c)) for c in
                      ["Online Security", "Online Backup", "Device Protection",
                       "Tech Support", "Streaming TV", "Streaming Movies"])
     services = (1 if phone else 0) + (1 if internet.lower() != "no" else 0) + online_yes
-    city = str(g("City", "city", "State", "state")).strip() or "United States"
+    city = str(get("City", "city", "State", "state")).strip() or "United States"
 
-    cv = str(g("Churn Value", "churn value", "churnvalue")).strip().lower()
-    if cv in ("1", "yes", "true"):
+    churn_flag = str(get("Churn Value", "churn value", "churnvalue")).strip().lower()
+    if churn_flag in ("1", "yes", "true"):
         label = 1
-    elif cv in ("0", "no", "false"):
+    elif churn_flag in ("0", "no", "false"):
         label = 0
     else:
-        label = 1 if str(g("Churn Label", "churn label")).strip().lower() == "yes" else 0
+        label = 1 if str(get("Churn Label", "churn label")).strip().lower() == "yes" else 0
 
-    # --- deterministic proxies (documented, demo-only) ---
     age = 68 if senior else 28 + _det(cid, 0, 29)
-    mult = 10 if contract == "Two year" else (8 if contract == "One year" else 6)
-    income = round(monthly * 12 * mult + 0.5 * cltv, 2)  # estimated demo feature
+    income_mult = 10 if contract == "Two year" else (8 if contract == "One year" else 6)
+    income = round(monthly * 12 * income_mult + 0.5 * cltv, 2)  # estimated demo feature
     avg_balance = round(cltv if cltv > 0 else total, 2)  # value proxy, NOT a bank balance
     txn_freq = round(2 + 3 * phone + 3 * (internet.lower() != "no")
                      + 2 * (contract != "Month-to-month") + min(4, monthly / 50), 1)
-    nosupport = sum(not _yes(g(c)) for c in
+    missing_support = sum(not _yes(get(c)) for c in
                     ["Online Security", "Online Backup", "Tech Support"])
-    complaints = min(3, nosupport) if score >= 50 else 0
+    complaints = min(3, missing_support) if score >= 50 else 0
     high_risk = score >= 75
     return {
         "name": cid,
@@ -139,61 +135,57 @@ def _telco_record(orig: dict) -> dict:
         "has_loan": 0,
         "complaints": complaints,
         # extra derived 16-feature inputs carried through for transparency
-        "_telco": {"contract": contract, "pay": pay, "score": score,
+        "_telco": {"contract": contract, "pay": pay_method, "score": score,
                    "logins": min(25, 3 + 2 * online_yes),
                    "inactivity": 30 if (contract == "Month-to-month" and score >= 70) else 5,
-                   "failed": 0.08 if pay == "Electronic check" else 0.02,
+                   "failed": 0.08 if pay_method == "Electronic check" else 0.02,
                    "bal_trend": -0.3 if high_risk else (-0.1 if score >= 50 else 0.05),
                    "txn_trend": -0.35 if high_risk else (-0.1 if score >= 50 else 0.05),
-                   "card": 0.5 if "automatic" in pay.lower() else 0.2,
+                   "card": 0.5 if "automatic" in pay_method.lower() else 0.2,
                    "eng": round(score / 100 * 0.7, 3)},
     }
 
 
-def _generic_record(row: dict, keys: dict) -> dict:
-    pick = lambda *ns: next((row[k] for k in ns if k in row), "")
-    name = str(pick("customerid", "customer id", "name", "customer", "id")).strip()
-    tenure = int(_num(pick("tenure months", "tenure_months", "tenure"), 12))
-    monthly = _num(pick("monthly charges", "avg_txn", "charges"), 4000)
+def _generic_record(row: dict) -> dict:
+    def get(*names):
+        return next((row[k] for k in names if k in row), "")
+    name = str(get("customerid", "customer id", "name", "customer", "id")).strip()
+    tenure = int(_num(get("tenure months", "tenure_months", "tenure"), 12))
+    monthly = _num(get("monthly charges", "avg_txn", "charges"), 4000)
     return {"name": name, "age": 35, "income": 600000, "tenure_months": tenure,
             "region": "Mumbai", "segment": "Mass",
-            "avg_balance": _num(pick("avg_balance", "total charges"), 50000),
+            "avg_balance": _num(get("avg_balance", "total charges"), 50000),
             "txn_freq": 8.0, "avg_txn": monthly, "label": 0,
             "n_products": 1, "has_loan": 0, "complaints": 0}
 
 
 def normalize_customer_csv(df: pd.DataFrame):
-    """Returns (dataset_type, records, mapping_preview, issues).
-
-    records: normalized dicts ready for the ingestion pipeline.
-    issues: human-readable row problems (identifier missing, dupes dropped).
-    """
+    """Normalize an uploaded CSV. Returns (dataset_type, records, mapping, issues)."""
     df = df.copy()
     df.columns = [str(c).strip() for c in df.columns]
     dtype = detect_dataset_type(df)
-    keys = {_key(c): c for c in df.columns}
     records, issues, seen = [], [], set()
-    for i, (_, s) in enumerate(df.iterrows(), start=2):
-        row = { _key(k): v for k, v in s.to_dict().items() }
+    for line_no, (_, series) in enumerate(df.iterrows(), start=2):
+        row = {_key(k): v for k, v in series.to_dict().items()}
         try:
-            sdict = s.to_dict()  # original-case keys for telco lookup
+            raw = series.to_dict()  # original-case keys for telco lookup
             if dtype == "banking":
-                rec = _banking_record(row)
+                record = _banking_record(row)
             elif dtype == "telco":
-                rec = _telco_record(sdict)
+                record = _telco_record(raw)
             else:
-                rec = _generic_record(row, keys)
+                record = _generic_record(row)
         except Exception as e:
-            issues.append(f"row {i}: cannot parse ({e})")
+            issues.append(f"row {line_no}: cannot parse ({e})")
             continue
-        if not rec["name"] or rec["name"].strip().lower() in ("nan", "none", "null"):
-            issues.append(f"row {i}: missing customer identifier, skipped")
+        if not record["name"] or record["name"].strip().lower() in ("nan", "none", "null"):
+            issues.append(f"row {line_no}: missing customer identifier, skipped")
             continue
-        if rec["name"] in seen:
-            issues.append(f"row {i}: duplicate '{rec['name']}' in file, skipped")
+        if record["name"] in seen:
+            issues.append(f"row {line_no}: duplicate '{record['name']}' in file, skipped")
             continue
-        seen.add(rec["name"])
-        records.append(rec)
+        seen.add(record["name"])
+        records.append(record)
     if dtype == "telco":
         mapping = TELCO_PREVIEW
     elif dtype == "banking":
