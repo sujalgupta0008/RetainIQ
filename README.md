@@ -61,7 +61,22 @@ docker compose up --build
 
 Backend seeds demo data on first boot (`python -m backend.seed`, skips when
 tenants exist). For Postgres set `DATABASE_URL=postgresql+psycopg2://...`
-(`psycopg2-binary` is in requirements). Health check: `GET /api/health`.
+(`psycopg2-binary` is in requirements; bare `postgres://` URLs are
+auto-normalized). Health check: `GET /api/health`.
+
+## Deploy (Render backend + Vercel frontend)
+
+1. Push this repo to GitHub (done). `render.yaml` defines API + Postgres.
+2. Render → New → Blueprint → repo select karo. `JWT_SECRET` auto-generate
+   hoga; `CORS_ORIGINS` me apna Vercel URL dalo
+   (`https://retainiq.vercel.app` placeholder badal dena); optional
+   `GOOGLE_CLIENT_ID` set karo.
+3. Vercel → New Project → `frontend/` select karo. Env vars:
+   `NEXT_PUBLIC_API_URL=https://<tumhara-render-api>.onrender.com`,
+   `NEXT_PUBLIC_GOOGLE_CLIENT_ID=<same-id>` (optional).
+4. Google Cloud Console → Client ID → Authorized JavaScript origins me
+   Render + Vercel dono URLs add karo.
+5. Verify: `<api>/docs` khule, Vercel login par demo + Google dono chale.
 
 ## Folder layout
 
