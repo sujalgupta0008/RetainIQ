@@ -18,7 +18,22 @@ deep navy `#0A142E→#0F2350` via same persisted toggle.
   `gradient-text` is now blue→teal, `glass` is white/blue-shadow in light.
 - Build ✅ tsc ✅ (no visual page changes yet — old pink gradients in pages die in Phase 2–4).
 
-## Phase 2 — Dashboard recomposition (TODO)
+## Phase 2 — Dashboard recomposition (DONE)
+New `app/dashboard/page.tsx`: 3 KPI cards (Total w/ segment count+median CLV; At Risk w/ %
++ 3-share mini donut; Retention Opportunity = expected protected, teal) → trend + priority
+(2fr) beside segments/drivers/AUC (1fr) → floating glass call-prioritization card (top-3,
+overlaps grid edge on lg, inline on mobile) → campaign table retained.
+- Trend = High % area (real: trajectory≥60% counts/total) + avg-risk teal line; Very High has
+  no data source → honest caption instead of invented series (spec-allowed placeholder).
+- Priority/action mapping (documented): rm_call|service_recovery → “Call now” 📞,
+  Monitor priority → “Monitor” 👁, else → “Email offer” ✉; risk pill from proba
+  (≥.8 Very High / ≥.6 High / ≥.35 Medium / else Low). Top-5 by priority rank.
+- Segments donut = customer-count share w/ % legend (real); drivers = RaR-share blue bars;
+  AUC radial gauge + “Trained on N” caption (no timestamp exists in metrics — used real field).
+- Dropped: old quadrant tiles + revenue-by-segment bars (same data lives on Segments page).
+- Deleted `ChurnOrb.tsx` (superseded by KPI mini-donut) and dead `BrandDefs` export.
+
+## Phase 3 — 3D/motion light version (TODO)
 ## Phase 3 — 3D/motion light version (TODO)
 ## Phase 4 — Re-theme remaining pages (TODO)
 ## Phase 5 — Verify (TODO)
