@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Card, Loading, Err, Button, PageHeader } from "@/components/ui";
-import { ChartTooltip, chartColors, ChartGradients } from "@/components/ui";
+import { Card, Loading, Err, Button, PageHeader, ChartTooltip, chartColors, ChartGradients } from "@/components/ui";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 

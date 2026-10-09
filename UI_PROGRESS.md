@@ -38,6 +38,24 @@ Content is ~1068px tall fixed (grid + hero + card don't shrink). Only 1080p fits
 - Result: 8/8 viewports scrollHeight == innerHeight (incl. 390x844).
 - Build ✅ tsc ✅.
 
+## Deadcode-cleanup pass (chore/deadcode-cleanup, 2026-10-08)
+- knip audit: removed Tabs/Modal/Drawer/TableSkeleton/btnPrimary/btnGhost/inputCls-exports/
+  Toast-system/useToast (no consumers; AppShell unwrapped), unexported internals
+  (cn/useCountUp/Skeleton/SkeletonCard/token/authHeaders), dropped `depcheck` devDep,
+  deleted `tsconfig.tsbuildinfo` + gitignored `*.tsbuildinfo`. −1163 lines.
+  knip now reports only `playwright` (CLI screenshot tooling, used constantly — kept).
+- Import scan (app+components+lib): exactly one unused import (`Input` in data page) → removed.
+- User walkthrough (authed Playwright, real demo data): login/google-msg/demo→dashboard,
+  dashboard sections+chips, customers search/filter/paginate/detail, segments, campaign
+  create→draft-detail (one QA probe created then fully deleted from local DB: 16 campaigns
+  restored), simulator slider, analytics/experiments/recommendations-filter/risk-metrics,
+  AI ask→answer, CSV preview (no import), settings validation, logout redirect.
+  Suspects cleared: "aarav" 26-hit search is correct; logout-redirect FAIL was test timing
+  (fresh check redirects fine). Zero console errors throughout.
+- Leftover pink hover (data download link) → blue; `poweredByHeader: false` hardening;
+  merged duplicate ui imports (roi/risk/cust-detail).
+- Final: tsc ✅ build 17/17 ✅ backend 65 ✅ knip clean-ish ✅.
+
 ## Phase 4 — Verify (DONE)
 - Login no-scroll asserted programmatically (scrollHeight <= innerHeight):
   1920x1080: 1080<=1080 · 1536x864: 864<=864 · 1440x900: 900<=900 ·

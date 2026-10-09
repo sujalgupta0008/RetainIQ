@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { num } from "@/lib/format";
-import { Card, Loading, Err, Button, Input, PageHeader } from "@/components/ui";
+import { Card, Loading, Err, Button, PageHeader } from "@/components/ui";
 import { Reveal } from "@/components/motion";
 import { Upload, FileDown, RefreshCw } from "lucide-react";
 
@@ -71,7 +71,7 @@ export default function Data() {
             <label className="inline-flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-full cursor-pointer shadow-glow-sm hover:-translate-y-px transition-all" style={{ backgroundImage: "linear-gradient(135deg,#2563EB,#3B82F6)" }}>
               <Upload size={15} /> Choose CSV<input type="file" accept=".csv" className="hidden" onChange={onChoose} />
             </label>
-            <a href={`${BASE}/api/data/sample`} download className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full glass transition-all hover:border-[rgba(236,47,139,0.4)]" style={{ color: "var(--text-1)" }}>
+            <a href={`${BASE}/api/data/sample`} download className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full glass transition-all hover:border-[rgba(37,99,235,0.45)]" style={{ color: "var(--text-1)" }}>
               <FileDown size={15} /> Download sample CSV
             </a>
             <Button variant="secondary" onClick={retrain}><RefreshCw size={15} /> Retrain model</Button>

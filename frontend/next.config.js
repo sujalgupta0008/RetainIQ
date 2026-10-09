@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // S10: baseline browser protections. Adjust connect-src if the API lives elsewhere.
+  poweredByHeader: false,
   async headers() {
     return [
       {
