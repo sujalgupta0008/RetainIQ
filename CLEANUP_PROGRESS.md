@@ -60,4 +60,9 @@ Rules: identical behavior/APIs; never touch .env, *.db, CSVs, *.pkl/*.sha256, te
 - Deliberately skipped: `next/dynamic` chart lazy-load (churn/risk without measurable need —
   shared First Load JS already 87.5kB), customers-list SQL pagination (fine at this scale),
   formatting normalization (no project formatter configured).
-## Phase 6 — Verification (pending)
+## Phase 6 — Verification (DONE)
+- Tests **66 passed**, coverage **90%** (was 89 — fewer statements, same tests).
+- Ruff F-set: only 2 protected tests/ hits. Bandit: 0. Secrets grep: clean.
+- Fresh `npm run build`: passes, shared First Load JS unchanged 87.5 kB.
+- Live: backend boot + dashboard/product-risk/segments/recs OK; frontend `next start` /login 200.
+- `git status` clean. Reports: CLEANUP_REPORT.md written.
