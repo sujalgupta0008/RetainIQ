@@ -1,0 +1,48 @@
+# RetainIQ Cleanup — Progress Log
+
+Branch: `chore/cleanup` (from `audit/full-sweep` @ 3d1d418+1).
+Rules: identical behavior/APIs; never touch .env, *.db, CSVs, *.pkl/*.sha256, tests/,
+.github/, SECURITY.md, docs, .env.example, lockfiles, or security code.
+
+## Phase 1 — Baseline (2026-10-06)
+- Tests: **66 passed**, coverage **89%** total (`--cov=backend`).
+- `npm run build`: passes. Shared First Load JS **87.5 kB** (chunks 31.9 + 53.6 + 2 kB).
+- Backend boot: `uvicorn backend.main:app` → `/api/health` OK.
+- LOC: backend **2955** lines / 35 py files; frontend **1234** lines / 25 ts/tsx/js/css files
+  (app+lib+components only). Tracked files: **87**. Worktree (excl .git/node_modules/caches): **20.1 MB**.
+- How to run: `pip install -r backend/requirements.txt` →
+  `python -m backend.seed --reset` → `python -m backend.ml.train` →
+  `python -m uvicorn backend.main:app --port 8000`; frontend `cd frontend; npm install; npm run dev`.
+
+## Phase 2 — Unused-code analysis (no deletions yet)
+### Python
+- `vulture backend --min-confidence 80`: only framework false positives (FastAPI route fns,
+  SQLAlchemy columns, middleware dispatch). No real dead functions at 80%.
+- `ruff --select F401,F841,F811,ERA001`: results + manual verdicts below.
+- Coverage never-executed fns: `ml/train.py` internals (run as script, covered indirectly),
+  `explain.py` stub, retrain-success path, some `services.py` analyst branches — all reachable
+  in production; NOT dead. Keep.
+### JS/TS (`npx knip`, `npx depcheck`)
+- knip: `inr2` (lib/format.ts, dup of `inr`, 0 refs), `Empty` (components/ui.tsx, 0 refs),
+  `token`/`authHeaders` (used internally by `api()` — keep), `depcheck` self-flag (tooling — keep).
+- depcheck unused list: all build/config-only deps (typescript, tailwindcss, postcss,
+  autoprefixer, @types/*) — false positives. No npm dep removable (recharts/lucide used;
+  knip+depcheck themselves just added deliberately).
+
+### Verified candidate list → Phase 3
+1. `inr2` in frontend/lib/format.ts — 0 refs (dup of `inr`). REMOVE export.
+2. `Empty` in frontend/components/ui.tsx — 0 refs. REMOVE component.
+3. `import shap` in backend/ml/explain.py:4 — fn returns None either way; REMOVE line only.
+4. `json` + top-level `numpy` in backend/ml/infer.py:13-14 — REMOVE (local `import numpy` kept).
+5. `func` in backend/routes/analytics.py:3 and segments.py:3 — 0 `func.` uses. REMOVE lines.
+6. `ACTIONS` in backend/routes/campaigns.py:7 import — 0 uses. REMOVE name only.
+7. `math`, `deterioration`, `audit`, `FEATURES` in backend/seed.py imports — 0 uses. REMOVE names only.
+8. `seed.py:132 now = ...` — F841, timestamps come from model defaults. REMOVE line.
+9. `secrets`, `random`, `from datetime import datetime, timedelta` in backend/services.py:2-3 — 0 uses (local `import datetime as dt` kept). REMOVE.
+10. tests/ unused imports (`pytest` test_endpoints, `asyncio` test_security) — PROTECTED by safety rules, KEEP.
+11. `cls` in schemas validators, route fns, ORM cols, knip `token/authHeaders`, depcheck list — false positives, KEEP.
+
+## Phase 3 — Removals (pending)
+## Phase 4 — Junk files (pending)
+## Phase 5 — Optimizations (pending)
+## Phase 6 — Verification (pending)
