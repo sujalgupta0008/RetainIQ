@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { inr, pct } from "@/lib/format";
-import { Card, RiskBadge, PrioBadge, Loading, Err, inputCls } from "@/components/ui";
+import { Card, RiskBadge, PrioBadge, Loading, Err, Input, Select, PageHeader, Avatar, Table, THead, TH, TD, TRow, Pagination, EmptyState } from "@/components/ui";
+import { Reveal } from "@/components/motion";
+import { Users } from "lucide-react";
 
 export default function Customers() {
   const [data, setData] = useState<any>(null);
@@ -15,64 +17,64 @@ export default function Customers() {
   const [page, setPage] = useState(1);
 
   const load = () => {
-    const q = new URLSearchParams({ search, risk, segment, sort, page: String(page), page_size: "20" });
-    api(`/api/customers?${q}`).then(setData).catch((e) => setErr(e.message));
+    const params = new URLSearchParams({ search, risk, segment, sort, page: String(page), page_size: "20" });
+    api(`/api/customers?${params}`).then(setData).catch((e) => setErr(e.message));
   };
   useEffect(() => { setErr(""); load(); }, [risk, segment, sort, page]);
   useEffect(() => { const t = setTimeout(() => { setPage(1); setErr(""); load(); }, 400); return () => clearTimeout(t); }, [search]);
 
   return (
     <div className="space-y-4">
-      <div><h1 className="text-2xl font-bold">Customers</h1>
-        <p className="text-sm text-slate-500">Ranked by revenue at risk. Click any row for the 360° view.</p></div>
-      <Card>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          <input className={inputCls} placeholder="Search name…" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <select className={inputCls} value={risk} onChange={(e) => setRisk(e.target.value)}>
-            <option value="">All risk</option><option>High</option><option>Medium</option><option>Low</option>
-          </select>
-          <select className={inputCls} value={segment} onChange={(e) => setSegment(e.target.value)}>
-            <option value="">All segments</option><option>Mass</option><option>Affluent</option><option>HNI</option><option>SME</option>
-          </select>
-          <select className={inputCls} value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="rar">Sort: Revenue at risk</option><option value="proba">Sort: Churn prob</option>
-            <option value="clv">Sort: CLV</option><option value="name">Sort: Name</option>
-          </select>
-          <div className="text-sm text-slate-500 self-center">{data ? `${data.total} customers` : ""}</div>
-        </div>
-      </Card>
-      {err ? <Err msg={err} retry={load} /> : !data ? <Loading /> : (
+      <PageHeader eyebrow="Portfolio" title="CUSTOMERS" desc="Ranked by revenue at risk. Click any row for the 360° view." />
+      <Reveal>
         <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead><tr className="text-left text-xs text-slate-500 border-b">
-                <th className="py-2 pr-2">Customer</th><th>Segment</th><th>Risk</th><th className="text-right">Churn prob</th>
-                <th className="text-right">CLV</th><th className="text-right">Revenue at risk</th><th>Next action</th><th>Priority</th>
-              </tr></thead>
-              <tbody>
-                {data.items.map((c: any) => (
-                  <tr key={c.id} className="border-b border-slate-50 hover:bg-indigo-50/40">
-                    <td className="py-2 pr-2"><Link href={`/customers/${c.id}`} className="font-medium text-indigo-700 hover:underline">{c.name}</Link></td>
-                    <td className="text-slate-500">{c.segment}</td>
-                    <td><RiskBadge band={c.band} /></td>
-                    <td className="text-right">{pct(c.proba)}</td>
-                    <td className="text-right">{inr(c.clv)}</td>
-                    <td className="text-right font-semibold">{inr(c.rar)}</td>
-                    <td className="text-slate-600 text-xs">{c.action.replaceAll("_", " ")}</td>
-                    <td><PrioBadge p={c.priority} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex items-center justify-between mt-3 text-sm">
-            <span className="text-slate-500">Page {data.page} of {Math.max(1, Math.ceil(data.total / data.page_size))}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="border rounded-lg px-3 py-1 disabled:opacity-40">Prev</button>
-              <button disabled={page * data.page_size >= data.total} onClick={() => setPage(page + 1)} className="border rounded-lg px-3 py-1 disabled:opacity-40">Next</button>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
+            <Input placeholder="Search name…" aria-label="Search name" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Select aria-label="Risk filter" value={risk} onChange={(e) => setRisk(e.target.value)}>
+              <option value="">All risk</option><option>High</option><option>Medium</option><option>Low</option>
+            </Select>
+            <Select aria-label="Segment filter" value={segment} onChange={(e) => setSegment(e.target.value)}>
+              <option value="">All segments</option><option>Mass</option><option>Affluent</option><option>HNI</option><option>SME</option>
+            </Select>
+            <Select aria-label="Sort" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="rar">Sort: Revenue at risk</option><option value="proba">Sort: Churn prob</option>
+              <option value="clv">Sort: CLV</option><option value="name">Sort: Name</option>
+            </Select>
+            <div className="text-[13px] self-center tnum" style={{ color: "var(--text-2)" }}>{data ? `${data.total.toLocaleString("en-IN")} customers` : ""}</div>
           </div>
         </Card>
+      </Reveal>
+      {err ? <Err msg={err} retry={load} /> : !data ? <Loading /> : (
+        <Reveal>
+          <Card>
+            {data.items.length === 0 ? (
+              <EmptyState icon={<Users size={20} />} title="No customers match" hint="Loosen the filters or search to see the ranked queue." />
+            ) : (
+              <Table>
+                <THead><TH>Customer</TH><TH>Segment</TH><TH>Risk</TH><TH right>Churn prob</TH><TH right>CLV</TH><TH right>Revenue at risk</TH><TH>Next action</TH><TH>Priority</TH></THead>
+                <tbody>
+                  {data.items.map((cust: any) => (
+                    <TRow key={cust.id}>
+                      <TD>
+                        <Link href={`/customers/${cust.id}`} className="flex items-center gap-2.5 font-semibold hover:underline" style={{ color: "var(--text-1)" }}>
+                          <Avatar name={cust.name} size={30} risk={cust.band} />{cust.name}
+                        </Link>
+                      </TD>
+                      <TD><span style={{ color: "var(--text-2)" }}>{cust.segment}</span></TD>
+                      <TD><RiskBadge band={cust.band} /></TD>
+                      <TD right>{pct(cust.proba)}</TD>
+                      <TD right>{inr(cust.clv)}</TD>
+                      <TD right><b>{inr(cust.rar)}</b></TD>
+                      <TD><span className="text-xs capitalize" style={{ color: "var(--text-2)" }}>{cust.action.replaceAll("_", " ")}</span></TD>
+                      <TD><PrioBadge p={cust.priority} /></TD>
+                    </TRow>
+                  ))}
+                </tbody>
+              </Table>
+            )}
+            <Pagination page={data.page} total={data.total} pageSize={data.page_size} onPage={setPage} />
+          </Card>
+        </Reveal>
       )}
     </div>
   );

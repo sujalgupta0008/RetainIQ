@@ -209,11 +209,11 @@ export function Table({ children, className }: { children: React.ReactNode; clas
 export function THead({ children }: { children: React.ReactNode }) {
   return <thead className="sticky top-0 z-10" style={{ background: "var(--elevated)" }}><tr className="text-left text-[11px] uppercase tracking-[0.07em]" style={{ color: "var(--text-3)" }}>{children}</tr></thead>;
 }
-export function TH({ children, right, className }: { children: React.ReactNode; right?: boolean; className?: string }) {
+export function TH({ children, right, className }: { children?: React.ReactNode; right?: boolean; className?: string }) {
   return <th className={cn("px-3 py-2.5 font-semibold whitespace-nowrap", right && "text-right", className)}>{children}</th>;
 }
-export function TD({ children, right, className }: { children: React.ReactNode; right?: boolean; className?: string }) {
-  return <td className={cn("px-3 py-2.5 border-t whitespace-nowrap", right && "text-right tnum", className)} style={{ borderColor: "var(--border)", color: "var(--text-1)" }}>{children}</td>;
+export function TD({ children, right, className, colSpan }: { children: React.ReactNode; right?: boolean; className?: string; colSpan?: number }) {
+  return <td colSpan={colSpan} className={cn("px-3 py-2.5 border-t whitespace-nowrap", right && "text-right tnum", className)} style={{ borderColor: "var(--border)", color: "var(--text-1)" }}>{children}</td>;
 }
 export function TRow({ children, className }: { children: React.ReactNode; className?: string }) {
   return <tr className={cn("transition-colors hover:bg-white/[0.04]", className)}>{children}</tr>;

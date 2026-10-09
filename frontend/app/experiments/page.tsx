@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { inr, pct } from "@/lib/format";
-import { Card, Loading, Err } from "@/components/ui";
+import { Card, Loading, Err, PageHeader, Table, THead, TH, TD, TRow, EmptyState, Badge } from "@/components/ui";
+import { Reveal } from "@/components/motion";
+import { FlaskConical } from "lucide-react";
 
 export default function Experiments() {
   const [rows, setRows] = useState<any[]>([]);
@@ -13,32 +15,33 @@ export default function Experiments() {
   if (!rows) return <Loading />;
   return (
     <div className="space-y-4">
-      <div><h1 className="text-2xl font-bold">Experiments</h1>
-        <p className="text-sm text-slate-500">Every campaign runs an A/B test: 80% treatment, 20% control. Outcomes simulated for demo.</p></div>
-      <Card>
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-xs text-slate-500 border-b">
-            <th className="py-2">Experiment</th><th className="text-right">Treat / Ctrl n</th>
-            <th className="text-right">Treat ret.</th><th className="text-right">Ctrl ret.</th>
-            <th className="text-right">Lift</th><th className="text-right">Revenue</th><th className="text-right">ROI</th>
-          </tr></thead>
-          <tbody>
-            {rows.map((e: any) => (
-              <tr key={e.id} className="border-b border-slate-50">
-                <td className="py-2 font-medium">{e.name}<div className="text-xs text-slate-400">{e.campaign}</div></td>
-                {e.results ? (<>
-                  <td className="text-right">{e.results.treat_n} / {e.results.ctrl_n}</td>
-                  <td className="text-right">{pct(e.results.treat_ret)}</td>
-                  <td className="text-right">{pct(e.results.ctrl_ret)}</td>
-                  <td className="text-right font-bold text-emerald-600">{pct(e.results.lift)}</td>
-                  <td className="text-right">{inr(e.results.revenue)}</td>
-                  <td className="text-right font-bold">{(e.results.roi * 100).toFixed(1)}%</td>
-                </>) : <td colSpan={6} className="text-right text-slate-400">pending launch</td>}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+      <PageHeader eyebrow="A/B Testing" title="EXPERIMENTS" desc="Every campaign runs an A/B test: 80% treatment, 20% control. Outcomes simulated for demo." />
+      <Reveal>
+        <Card>
+          {rows.length === 0 ? (
+            <EmptyState icon={<FlaskConical size={20} />} title="No experiments yet" hint="Launch a campaign to start the first 80/20 test." />
+          ) : (
+            <Table>
+              <THead><TH>Experiment</TH><TH right>Treat / Ctrl n</TH><TH right>Treat ret.</TH><TH right>Ctrl ret.</TH><TH right>Lift</TH><TH right>Revenue</TH><TH right>ROI</TH></THead>
+              <tbody>
+                {rows.map((exp: any) => (
+                  <TRow key={exp.id}>
+                    <TD><span className="font-semibold">{exp.name}</span><div className="text-[11px]" style={{ color: "var(--text-3)" }}>{exp.campaign}</div></TD>
+                    {exp.results ? (<>
+                      <TD right>{exp.results.treat_n} / {exp.results.ctrl_n}</TD>
+                      <TD right>{pct(exp.results.treat_ret)}</TD>
+                      <TD right>{pct(exp.results.ctrl_ret)}</TD>
+                      <TD right><b className="text-semantic-success tnum">{pct(exp.results.lift)}</b></TD>
+                      <TD right>{inr(exp.results.revenue)}</TD>
+                      <TD right><b className="tnum">{(exp.results.roi * 100).toFixed(1)}%</b></TD>
+                    </>) : <TD right colSpan={6}><Badge tone="neutral">pending launch</Badge></TD>}
+                  </TRow>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card>
+      </Reveal>
     </div>
   );
 }

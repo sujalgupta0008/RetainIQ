@@ -2,32 +2,35 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { inr, pct } from "@/lib/format";
-import { Card, Loading, Err } from "@/components/ui";
+import { Card, Loading, Err, PageHeader } from "@/components/ui";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 
 export default function Segments() {
-  const [d, setD] = useState<any>(null);
+  const [data, setData] = useState<any>(null);
   const [err, setErr] = useState("");
-  const load = () => api("/api/segments/overview").then(setD).catch((e) => setErr(e.message));
+  const load = () => api("/api/segments/overview").then(setData).catch((e) => setErr(e.message));
   useEffect(() => { load(); }, []);
   if (err) return <Err msg={err} retry={load} />;
-  if (!d) return <Loading />;
+  if (!data) return <Loading />;
   return (
     <div className="space-y-4">
-      <div><h1 className="text-2xl font-bold">Segments</h1>
-        <p className="text-sm text-slate-500">Value × risk quadrants split at median CLV {inr(d.median_clv)}. Save the high-value, high-risk box first.</p></div>
-      <div className="grid md:grid-cols-2 gap-4">
-        {d.segments.map((s: any) => (
-          <Card key={s.segment} title={s.segment} right={<span className="text-sm font-bold text-red-600">{inr(s.rar)} at risk</span>}>
-            <div className="flex gap-6 text-sm">
-              <div><span className="text-slate-500">Customers:</span> <b>{s.count}</b></div>
-              <div><span className="text-slate-500">Avg churn prob:</span> <b>{pct(s.avg_proba)}</b></div>
-            </div>
-            <div className="mt-2 bg-slate-100 rounded-full h-2">
-              <div className="bg-indigo-500 h-2 rounded-full" style={{ width: `${Math.min(100, (s.rar / Math.max(1, d.segments[0].rar)) * 100)}%` }} />
-            </div>
-          </Card>
+      <PageHeader eyebrow="Portfolio" title="SEGMENTS" desc={`Value × risk quadrants split at median CLV ${inr(data.median_clv)}. Save the high-value, high-risk box first.`} />
+      <Stagger className="grid md:grid-cols-2 gap-4">
+        {data.segments.map((seg: any) => (
+          <StaggerItem key={seg.segment}>
+            <Card hover title={seg.segment} right={<span className="text-sm font-extrabold tnum text-risk-high">{inr(seg.rar)} at risk</span>}>
+              <div className="flex gap-6 text-[13px]">
+                <div><span style={{ color: "var(--text-3)" }}>Customers:</span> <b className="tnum" style={{ color: "var(--text-1)" }}>{seg.count}</b></div>
+                <div><span style={{ color: "var(--text-3)" }}>Avg churn prob:</span> <b className="tnum" style={{ color: "var(--text-1)" }}>{pct(seg.avg_proba)}</b></div>
+              </div>
+              <div className="mt-3 rounded-full h-2" style={{ background: "rgba(255,255,255,0.07)" }}>
+                <div className="h-2 rounded-full" style={{ width: `${Math.min(100, (seg.rar / Math.max(1, data.segments[0].rar)) * 100)}%`, backgroundImage: "linear-gradient(90deg,#C026D3,#EC2F8B,#FF4D6D)" }} />
+              </div>
+            </Card>
+          </StaggerItem>
         ))}
-      </div>
+      </Stagger>
+      <Reveal><p className="text-[11px]" style={{ color: "var(--text-3)" }}>Bars are relative to the largest segment by revenue at risk.</p></Reveal>
     </div>
   );
 }
