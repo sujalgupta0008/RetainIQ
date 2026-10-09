@@ -50,7 +50,7 @@ export default function CustomerDetail({ params }: { params: { id: string } }) {
             <div className="space-y-2">
               {cust.drivers.map((driver: any, i: number) => (
                 <div key={i} className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: driver.impact > 0 ? "#FF4D6D" : "#34D399", boxShadow: `0 0 8px ${driver.impact > 0 ? "#FF4D6D" : "#34D399"}` }} />
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: driver.impact > 0 ? "#F97316" : "#14B8A6", boxShadow: `0 0 8px ${driver.impact > 0 ? "#F97316" : "#14B8A6"}` }} />
                   <span className="font-semibold w-44 truncate" style={{ color: "var(--text-1)" }}>{driver.label}</span>
                   <span className="text-xs tnum truncate" style={{ color: "var(--text-3)" }}>value {num(driver.value)} · typical {num(driver.typical)}</span>
                   <span className={`ml-auto text-[11px] font-bold shrink-0 ${driver.impact > 0 ? "text-risk-high" : "text-semantic-success"}`}>
@@ -70,7 +70,7 @@ export default function CustomerDetail({ params }: { params: { id: string } }) {
                 <YAxis tick={{ fontSize: 12, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip />} />
                 <Area type="monotone" dataKey="risk" stroke="none" fill="url(#rq-fill)" name="risk %" />
-                <Line type="monotone" dataKey="risk" stroke="url(#rq-line)" strokeWidth={2.5} dot={{ r: 3, fill: "#FF4D6D", strokeWidth: 0 }} name="risk %" />
+                <Line type="monotone" dataKey="risk" stroke="url(#rq-line)" strokeWidth={2.5} dot={{ r: 3, fill: "#F97316", strokeWidth: 0 }} name="risk %" />
               </LineChart>
             </ResponsiveContainer>
           </Card>

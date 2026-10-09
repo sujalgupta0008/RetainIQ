@@ -25,7 +25,7 @@ export default function ROI() {
     { name: "Expected", ...result.scenarios.expected },
     { name: "Optimistic", ...result.scenarios.optimistic },
   ];
-  const slider = "w-full accent-[#EC2F8B]";
+  const slider = "w-full accent-[#2563EB]";
   return (
     <div className="space-y-4">
       <PageHeader eyebrow="Hero" title="ROI SIMULATOR" desc="Who should we save, what should we spend, will it be profitable? All outputs are estimates."

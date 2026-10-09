@@ -39,7 +39,7 @@ export default function CampaignDetail({ params }: { params: { id: string } }) {
               <div className="grid grid-cols-2 gap-3 text-center">
                 <div className="glass rounded-2xl p-4"><div className="text-2xl font-extrabold tnum" style={{ color: "var(--text-1)" }}>{pct(result.ctrl_ret)}</div>
                   <div className="text-[11px] mt-1" style={{ color: "var(--text-3)" }}>Control retention (n={result.ctrl_n})</div></div>
-                <div className="rounded-2xl p-4 text-white" style={{ backgroundImage: "linear-gradient(135deg,#C026D3,#EC2F8B,#FF4D6D)" }}><div className="text-2xl font-extrabold tnum">{pct(result.treat_ret)}</div>
+                <div className="rounded-2xl p-4 text-white" style={{ backgroundImage: "linear-gradient(135deg,#1D4ED8,#2563EB,#3B82F6)" }}><div className="text-2xl font-extrabold tnum">{pct(result.treat_ret)}</div>
                   <div className="text-[11px] mt-1 opacity-90">Treatment retention (n={result.treat_n})</div></div>
               </div>
               <p className="mt-3 text-sm" style={{ color: "var(--text-2)" }}>Incremental lift: <b className="text-semantic-success tnum">{pct(result.lift)}</b></p>

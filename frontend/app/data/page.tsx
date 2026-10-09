@@ -68,7 +68,7 @@ export default function Data() {
         <Card glow title="Upload customers (CSV)">
           <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--text-2)" }}>Accepted: RetainIQ banking sample <b>or</b> IBM Telco Customer Churn CSV (CustomerID, Monthly Charges, Churn Value…). Duplicates are skipped and reported.</p>
           <div className="flex gap-2 flex-wrap">
-            <label className="inline-flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-full cursor-pointer shadow-glow-sm hover:-translate-y-px transition-all" style={{ backgroundImage: "linear-gradient(135deg,#C026D3,#EC2F8B 50%,#FF4D6D)" }}>
+            <label className="inline-flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-full cursor-pointer shadow-glow-sm hover:-translate-y-px transition-all" style={{ backgroundImage: "linear-gradient(135deg,#2563EB,#3B82F6)" }}>
               <Upload size={15} /> Choose CSV<input type="file" accept=".csv" className="hidden" onChange={onChoose} />
             </label>
             <a href={`${BASE}/api/data/sample`} download className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full glass transition-all hover:border-[rgba(236,47,139,0.4)]" style={{ color: "var(--text-1)" }}>
@@ -88,7 +88,7 @@ export default function Data() {
               {preview.mapping.slice(0, 8).map((row: any, i: number) => (
                 <div key={i} className="glass rounded-xl px-3 py-2 flex items-center gap-2">
                   <span className="truncate" style={{ color: "var(--text-3)" }}>{row.from}</span>
-                  <span style={{ color: "#EC2F8B" }}>→</span>
+                  <span style={{ color: "#2563EB" }}>→</span>
                   <b className="truncate" style={{ color: "var(--text-1)" }}>{row.to}</b>
                 </div>
               ))}

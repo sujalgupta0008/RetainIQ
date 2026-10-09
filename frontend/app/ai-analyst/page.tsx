@@ -28,7 +28,7 @@ export default function AIAnalyst() {
         {suggestions.map((item) => (
           <button key={item} onClick={() => ask(item)}
             className="text-xs font-medium rounded-full px-3.5 py-2 glass glass-hover transition-all" style={{ color: "var(--text-1)" }}>
-            <span className="mr-1.5" style={{ color: "#EC2F8B" }}>✦</span>{item}
+            <span className="mr-1.5" style={{ color: "#2563EB" }}>✦</span>{item}
           </button>
         ))}
       </div>
@@ -47,9 +47,9 @@ export default function AIAnalyst() {
       {chat.map((msg, i) => (
         <Reveal key={i} delay={Math.min(i * 0.03, 0.15)}>
           <div className="space-y-2">
-            <div className="rounded-2xl px-4 py-3 text-sm ml-8 text-white" style={{ backgroundImage: "linear-gradient(135deg,#C026D3,#EC2F8B 60%,#FF4D6D)" }}>{msg.q}</div>
+            <div className="rounded-2xl px-4 py-3 text-sm ml-8 text-white" style={{ backgroundImage: "linear-gradient(135deg,#1D4ED8,#2563EB 60%,#3B82F6)" }}>{msg.q}</div>
             <div className="glass rounded-2xl px-4 py-3.5 text-sm mr-8 whitespace-pre-wrap leading-relaxed flex gap-2.5" style={{ color: "var(--text-1)" }}>
-              <Sparkles size={15} className="shrink-0 mt-0.5" style={{ color: "#EC2F8B" }} />
+              <Sparkles size={15} className="shrink-0 mt-0.5" style={{ color: "#2563EB" }} />
               <span>{msg.a}</span>
             </div>
           </div>

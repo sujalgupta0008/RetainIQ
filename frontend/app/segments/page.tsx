@@ -24,7 +24,7 @@ export default function Segments() {
                 <div><span style={{ color: "var(--text-3)" }}>Avg churn prob:</span> <b className="tnum" style={{ color: "var(--text-1)" }}>{pct(seg.avg_proba)}</b></div>
               </div>
               <div className="mt-3 rounded-full h-2" style={{ background: "rgba(255,255,255,0.07)" }}>
-                <div className="h-2 rounded-full" style={{ width: `${Math.min(100, (seg.rar / Math.max(1, data.segments[0].rar)) * 100)}%`, backgroundImage: "linear-gradient(90deg,#C026D3,#EC2F8B,#FF4D6D)" }} />
+                <div className="h-2 rounded-full" style={{ width: `${Math.min(100, (seg.rar / Math.max(1, data.segments[0].rar)) * 100)}%`, backgroundImage: "linear-gradient(90deg,#2563EB,#3B82F6)" }} />
               </div>
             </Card>
           </StaggerItem>

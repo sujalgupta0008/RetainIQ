@@ -43,7 +43,16 @@ overlaps grid edge on lg, inline on mobile) → campaign table retained.
 - Motion: existing Reveal/Stagger/Tilt reused (150–400ms); global reduced-motion guard
   freezes the bobbing; tilt is mouse-only.
 
-## Phase 4 — Re-theme remaining pages (TODO)
+## Phase 4 — Re-theme remaining pages (DONE)
+- `AppShell`: navy gradient sidebar (white icons, blue-pill active + glow, icon-only collapse),
+  light topbar, blue tenant badge/focus states; all logic unchanged.
+- Page sweep: every hardcoded pink replaced — AI bubbles/links blue, driver dots orange/teal,
+  risk bars/legend green/amber/orange, upload/CTA gradients blue, ROI slider blue, treatment
+  panel blue, segment bars blue, Open-links navy-blue.
+- Remaining `text-semantic-*` / `text-risk-high` usages resolve through new tokens (teal
+  growth, orange high-risk) — no edits needed. Tilt glow + Tabs hover + tooltip dot → blue.
+
+## Phase 5 — Verify (TODO)
 ## Phase 3 — 3D/motion light version (TODO)
 ## Phase 4 — Re-theme remaining pages (TODO)
 ## Phase 5 — Verify (TODO)

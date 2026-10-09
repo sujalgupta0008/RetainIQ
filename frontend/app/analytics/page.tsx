@@ -27,7 +27,7 @@ export default function Analytics() {
               {data.alerts.slice(0, 8).map((alert: any, i: number) => (
                 <div key={i} className="text-[13px] rounded-xl px-3 py-2 border border-rose-500/20 bg-rose-500/10 flex items-center gap-2" style={{ color: "var(--text-1)" }}>
                   <BellRing size={14} className="shrink-0 text-risk-high" />
-                  {alert.id ? <Link href={`/customers/${alert.id}`} className="font-bold hover:underline shrink-0" style={{ color: "#EC2F8B" }}>{alert.customer}</Link> : null}
+                  {alert.id ? <Link href={`/customers/${alert.id}`} className="font-bold hover:underline shrink-0" style={{ color: "#1D4ED8" }}>{alert.customer}</Link> : null}
                   <span className="truncate">{alert.msg}</span>
                 </div>
               ))}

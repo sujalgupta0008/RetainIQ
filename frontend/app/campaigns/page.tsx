@@ -67,7 +67,7 @@ export default function Campaigns() {
                       <TD><span className="capitalize" style={{ color: "var(--text-2)" }}>{camp.intervention.replaceAll("_", " ")}</span></TD>
                       <TD><Badge tone={camp.status === "completed" ? "success" : "neutral"}>{camp.status}</Badge></TD>
                       <TD right>{camp.targets}</TD>
-                      <TD right><Link href={`/campaigns/${camp.id}`} className="text-xs font-bold hover:underline" style={{ color: "#EC2F8B" }}>Open →</Link></TD>
+                      <TD right><Link href={`/campaigns/${camp.id}`} className="text-xs font-bold hover:underline" style={{ color: "#1D4ED8" }}>Open →</Link></TD>
                     </TRow>
                   ))}
                 </tbody>

@@ -204,7 +204,7 @@ export function Tabs<T extends string>({ options, value, onChange }: {
       {options.map((o) => (
         <button key={o.v} role="tab" aria-selected={value === o.v} onClick={() => onChange(o.v)}
           className={cn("px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all",
-            value === o.v ? "text-white shadow-glow-sm" : "hover:bg-white/5")}
+            value === o.v ? "text-white shadow-glow-sm" : "hover:bg-[#2563EB]/10")}
           style={value === o.v ? { backgroundImage: "linear-gradient(135deg,#2563EB,#3B82F6)" } : { color: "var(--text-2)" }}>
           {o.label}
         </button>
@@ -473,7 +473,7 @@ export function ChartTooltip({ active, payload, label, formatter }: any) {
       {label != null && label !== "" && <div className="font-bold mb-1">{String(label)}</div>}
       {payload.map((p: any, i: number) => (
         <div key={i} className="flex items-center gap-2 tnum">
-          <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.payload?.fill || "#EC2F8B" }} />
+          <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.payload?.fill || "#2563EB" }} />
           <span style={{ color: "var(--text-2)" }}>{p.name}:</span>
           <b>{formatter ? formatter(p.value, p) : p.value}</b>
         </div>

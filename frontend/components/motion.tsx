@@ -72,7 +72,7 @@ export function Tilt({ children, className, max = 7 }: {
       className={`tilt transition-transform duration-200 ${className || ""}`} style={style}>
       <div className="tilt-inner relative">
         <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 hover:opacity-100 transition-opacity"
-          style={{ background: `radial-gradient(320px 200px at ${glow.x}% ${glow.y}%, rgba(236,47,139,0.16), transparent 70%)` }} />
+          style={{ background: `radial-gradient(320px 200px at ${glow.x}% ${glow.y}%, rgba(37,99,235,0.14), transparent 70%)` }} />
         {children}
       </div>
     </div>

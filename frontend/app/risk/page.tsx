@@ -26,7 +26,7 @@ export default function Risk() {
   if (!data) return <Loading />;
   const metrics = data.metrics;
   const confusion = metrics.confusion || [[0, 0], [0, 0]];
-  const barData = data.riskDist.map((r: any) => ({ ...r, fill: r.band === "High" ? "#FF4D6D" : r.band === "Medium" ? "#FBBF24" : "#34D399" }));
+  const barData = data.riskDist.map((r: any) => ({ ...r, fill: r.band === "High" ? "#F97316" : r.band === "Medium" ? "#F59E0B" : "#22C55E" }));
   return (
     <div className="space-y-4">
       <PageHeader eyebrow="Model" title="RISK & MODEL" desc="XGBoost primary (HistGradientBoosting fallback) + Logistic Regression baseline. Optimized for AUC, not just accuracy."
@@ -76,7 +76,7 @@ export default function Risk() {
         <Card title="How prediction works" sub="Feature engineering → train/test split → XGBoost → SHAP-style explanations">
           <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)" }}>16 behavioral features (tenure, balances, trends, frequency, complaints, logins, inactivity, failed rate…). Risk bands: Low &lt;35%, Medium 35–60%, High ≥60%. Explanations compare each customer against the tenant median — never invented.</p>
           <div className="grid grid-cols-3 gap-2 mt-3">
-            {[["Low", "#34D399", "< 35%"], ["Medium", "#FBBF24", "35–60%"], ["High", "#FF4D6D", "≥ 60%"]].map(([b, c, r]) => (
+            {[["Low", "#22C55E", "< 35%"], ["Medium", "#F59E0B", "35–60%"], ["High", "#F97316", "≥ 60%"]].map(([b, c, r]) => (
               <div key={b} className="glass rounded-xl p-3 text-center">
                 <span className="inline-block w-2.5 h-2.5 rounded-full mb-1" style={{ background: c, boxShadow: `0 0 10px ${c}` }} />
                 <div className="text-sm font-bold" style={{ color: "var(--text-1)" }}>{b}</div>
