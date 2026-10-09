@@ -79,26 +79,26 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 items-center gap-8 px-5 md:px-12 py-10 max-w-[1280px] mx-auto w-full">
+    <div className="min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden grid lg:grid-cols-[1fr_1.05fr] items-center gap-4 lg:gap-8 px-5 md:px-10 py-4 lg:py-6 max-w-[1280px] mx-auto w-full">
       {/* left: headline */}
       <Reveal>
         <div className="max-w-lg">
-          <div className="flex items-center gap-2 mb-7">
-            <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-glow-sm"
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-glow-sm"
               style={{ backgroundImage: "linear-gradient(135deg,#2563EB,#3B82F6)" }}>
-              <Landmark size={18} />
+              <Landmark size={16} />
             </span>
-            <span className="font-extrabold tracking-tight text-lg" style={{ color: "var(--text-1)" }}>RetainIQ</span>
+            <span className="font-extrabold tracking-tight text-base" style={{ color: "var(--text-1)" }}>RetainIQ</span>
           </div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] gradient-text mb-3">Retention ROI Intelligence</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] gradient-text mb-2">Retention ROI Intelligence</p>
           <h1 className="hero-title" style={{ color: "var(--text-1)" }}>
             Stop churn<br />before it starts.
           </h1>
-          <p className="mt-4 text-[15px] leading-relaxed" style={{ color: "var(--text-2)" }}>
+          <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-2)" }}>
             RetainIQ scores every customer for churn risk, prescribes the next best
             action, and proves the ROI — live on your own portfolio data.
           </p>
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="hide-short mt-4 hidden md:flex flex-wrap gap-2">
             {[
               { icon: <ShieldCheck size={14} />, t: "Live risk scoring" },
               { icon: <FlaskConical size={14} />, t: "80/20 experiments" },
@@ -109,7 +109,7 @@ export default function Login() {
               </span>
             ))}
           </div>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-5 hidden md:flex flex-wrap gap-3">
             <Button size="lg" disabled={busy} onClick={() => submit(undefined, "admin@demobank.in")}>
               <Play size={15} /> Try the live demo
             </Button>
@@ -120,41 +120,41 @@ export default function Login() {
         </div>
       </Reveal>
 
-      {/* right: 3D visual + form */}
-      <div className="relative">
+      {/* right: 3D hero preview + form (hero never overlaps the card) */}
+      <div className="relative min-w-0 lg:max-h-[100dvh] lg:overflow-hidden flex flex-col justify-center gap-3 py-1">
         <Reveal delay={0.1}>
-          <div className="pb-10">
+          <div className="hidden lg:block hide-short login-hero">
             <FloatingDash />
           </div>
         </Reveal>
         <Reveal delay={0.18}>
-          <div className="glass rounded-3xl p-7 w-full max-w-md mx-auto mt-2 relative shadow-card">
-            <h2 className="text-lg font-extrabold tracking-tight" style={{ color: "var(--text-1)" }}>Welcome back</h2>
-            <p className="text-[13px] mt-1 mb-5" style={{ color: "var(--text-2)" }}>Sign in to your retention dashboard.</p>
-            <form onSubmit={(e) => submit(e)} className="space-y-3">
+          <div className="glass rounded-3xl p-4 md:p-5 w-full max-w-md mx-auto relative shadow-card">
+            <h2 className="text-base font-extrabold tracking-tight" style={{ color: "var(--text-1)" }}>Welcome back</h2>
+            <p className="text-[13px] mt-0.5 mb-3" style={{ color: "var(--text-2)" }}>Sign in to your retention dashboard.</p>
+            <form onSubmit={(e) => submit(e)} className="space-y-2.5">
               <div>
                 <label htmlFor="email" className="text-[11px] font-semibold uppercase tracking-[0.07em]" style={{ color: "var(--text-2)" }}>Email</label>
-                <Input id="email" className="mt-1.5" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" autoComplete="email" />
+                <Input id="email" className="mt-1 min-h-[2.75rem]" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" autoComplete="email" />
               </div>
               <div>
                 <label htmlFor="pw" className="text-[11px] font-semibold uppercase tracking-[0.07em]" style={{ color: "var(--text-2)" }}>Password</label>
-                <Input id="pw" className="mt-1.5" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" autoComplete="current-password" />
+                <Input id="pw" className="mt-1 min-h-[2.75rem]" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" autoComplete="current-password" />
               </div>
               {err && <p className="text-[13px] text-red-600 dark:text-red-400" role="alert">{err}</p>}
-              <Button type="submit" className="w-full" size="lg" loading={busy}>
+              <Button type="submit" className="w-full min-h-[2.75rem]" size="lg" loading={busy}>
                 {busy ? "Signing in…" : <>Sign in <ArrowRight size={16} /></>}
               </Button>
             </form>
-            <div className="flex items-center gap-3 my-4" aria-hidden>
+            <div className="flex items-center gap-3 my-3" aria-hidden>
               <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
               <span className="text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--text-3)" }}>or</span>
               <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
             </div>
-            <Button variant="secondary" className="w-full bg-white" size="lg" loading={gbusy} onClick={googleLogin}>
+            <Button variant="secondary" className="w-full bg-white min-h-[2.75rem]" size="lg" loading={gbusy} onClick={googleLogin}>
               <GoogleIcon /> Continue with Google
             </Button>
             {gmsg && <p className="text-xs mt-2 text-center" role="status" style={{ color: "var(--text-2)" }}>{gmsg}</p>}
-            <div className="mt-5 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+            <div className="mt-3 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] mb-2" style={{ color: "var(--text-3)" }}>One-click demo login</p>
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="secondary" onClick={() => submit(undefined, "admin@demobank.in")} disabled={busy}>
@@ -162,7 +162,7 @@ export default function Login() {
                 </Button>
                 <Button variant="secondary" onClick={() => submit(undefined, "admin@demofintech.in")} disabled={busy}>Demo Fintech</Button>
               </div>
-              <p className="text-[11px] mt-2.5" style={{ color: "var(--text-3)" }}>Demo password: demo123 · Predictions shown are estimates.</p>
+              <p className="text-[11px] mt-2" style={{ color: "var(--text-3)" }}>Demo password: demo123 · Predictions shown are estimates.</p>
             </div>
           </div>
         </Reveal>

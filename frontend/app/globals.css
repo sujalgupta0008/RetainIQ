@@ -219,7 +219,17 @@ body {
   background-size: 200% 100%;
 }
 
-/* 3D tilt helper */
+/* login one-screen helpers */
+.login-hero {
+  height: clamp(180px, 28vh, 320px);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(black 72%, transparent 98%);
+  mask-image: linear-gradient(black 72%, transparent 98%);
+}
+/* short screens: hero + chips make room for headline + card */
+@media (max-height: 760px) {
+  .hide-short { display: none !important; }
+}
 .tilt { transform-style: preserve-3d; will-change: transform; }
 .tilt-inner { transform: translateZ(24px); }
 

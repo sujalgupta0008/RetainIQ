@@ -25,8 +25,19 @@ Content is ~1068px tall fixed (grid + hero + card don't shrink). Only 1080p fits
 - Drive-by: login H1 now uses `var(--text-1)` so dark mode stays readable.
 - Build ✅ tsc ✅.
 
-## Phase 3 — Login one-screen (TODO)
-## Phase 3 — Login one-screen (TODO)
+## Phase 3 — Login one-screen (DONE)
+- Root: `min-h-[100dvh]`, and on lg+ `h-[100dvh] + overflow-hidden`; two-col grid
+  (`1fr 1.05fr`), vertically centered, tighter rhythm (py-4/6, gaps, brand row, card p-4/5).
+- Right column (`lg:max-h + overflow-hidden`, flex): hero on top
+  (`.login-hero`: `clamp(180px,28vh,320px)`, `overflow:hidden`, bottom fade mask — decorative
+  crop, never overlaps the card), compact form below (p-4/5, 2.75rem inputs/buttons ≈40px,
+  tighter dividers, demo buttons one row, one-line note).
+- Short screens (`max-height:760px`): hero + feature chips hidden via `.hide-short`.
+- Mobile (<lg): stacked + scrollable; hero hidden; chips + hero CTA row hidden below md
+  (duplicates of form actions) so the form fits one screen.
+- Result: 8/8 viewports scrollHeight == innerHeight (incl. 390x844).
+- Build ✅ tsc ✅.
+
 ## Phase 4 — Verify (TODO)
 
 ## Phase 1 — Tokens (DONE)
