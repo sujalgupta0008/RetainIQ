@@ -86,3 +86,9 @@ R3F/three chunks eliminated (were dynamic-only on login). No perf collapse (belo
 3. “Last updated” for the model doesn’t exist in metrics — shows “Trained on N”.
 4. Screenshots cover login/dashboard/customers; other routes share shell/components, all 200 + clean.
 5. Segments donut labels come from backend segment names (currently quadrant-style names) — real data, shown as-is.
+6. **Login follow-up (2026-10-08):** right-column overlap fixed (visual gets `pb-10` breathing
+   room, floating chips constrained inside the board, form no longer pulled up over the visual).
+   Added “Continue with Google” (inline G logo, no external assets): attempts real GIS +
+   `POST /api/auth/google` only when `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is set; otherwise shows an
+   honest “not connected” message. Real Google login needs backend OAuth + client ID (out of
+   UI scope) — verified: message shows, email/demo flows unchanged and land on dashboard.

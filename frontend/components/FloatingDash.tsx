@@ -70,7 +70,7 @@ export default function FloatingDash() {
       </div>
 
       {/* floating glass cards */}
-      <div className="absolute -top-6 -right-2 sm:right-2 rounded-2xl bg-white/85 border border-[#E6ECF5] px-3.5 py-2.5 flex items-center gap-2.5 animate-float shadow-card"
+      <div className="absolute -top-2 right-2 rounded-2xl bg-white/85 border border-[#E6ECF5] px-3.5 py-2.5 flex items-center gap-2.5 animate-float shadow-card"
         style={{ backdropFilter: "blur(10px)", transform: "translateZ(90px)" }}>
         <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ backgroundImage: "linear-gradient(135deg,#2563EB,#3B82F6)" }}>
           <ShieldCheck size={16} />
@@ -80,7 +80,7 @@ export default function FloatingDash() {
           <span className="block text-[10px] text-slate-500">32 saved today</span>
         </span>
       </div>
-      <div className="absolute top-1/3 -left-2 sm:left-0 rounded-2xl bg-white/85 border border-[#E6ECF5] px-3.5 py-2.5 flex items-center gap-2.5 animate-float shadow-card"
+      <div className="absolute top-[38%] left-0 rounded-2xl bg-white/85 border border-[#E6ECF5] px-3.5 py-2.5 flex items-center gap-2.5 animate-float shadow-card"
         style={{ backdropFilter: "blur(10px)", animationDelay: "1.4s" }}>
         <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ backgroundImage: "linear-gradient(135deg,#14B8A6,#3B82F6)" }}>
           <FileBarChart size={16} />
@@ -90,7 +90,7 @@ export default function FloatingDash() {
           <span className="block text-[10px] text-slate-500">this quarter</span>
         </span>
       </div>
-      <div className="absolute -bottom-5 right-8 rounded-2xl bg-white/85 border border-[#E6ECF5] px-3.5 py-2.5 flex items-center gap-2.5 animate-float shadow-card"
+      <div className="absolute bottom-8 right-2 rounded-2xl bg-white/85 border border-[#E6ECF5] px-3.5 py-2.5 flex items-center gap-2.5 animate-float shadow-card"
         style={{ backdropFilter: "blur(10px)", animationDelay: "2.6s" }}>
         <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ backgroundImage: "linear-gradient(135deg,#0B1A3A,#2563EB)" }}>
           <Users size={16} />
