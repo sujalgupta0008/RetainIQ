@@ -19,7 +19,7 @@ services:
           name: retainiq-db
           property: connectionString
       - key: CORS_ORIGINS
-        value: https://retainiq.vercel.app
+        value: https://retainiq-frontend-seven.vercel.app
       - key: SEED
         value: "42"
       - key: GOOGLE_CLIENT_ID
