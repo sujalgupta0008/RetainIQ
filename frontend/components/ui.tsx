@@ -1,13 +1,13 @@
 "use client";
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 /* ---------- utils ---------- */
-export function cn(...xs: Array<string | false | null | undefined>) {
+function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
-export function useCountUp(target: number, opts?: { duration?: number; enabled?: boolean }) {
+function useCountUp(target: number, opts?: { duration?: number; enabled?: boolean }) {
   const duration = opts?.duration ?? 700;
   const enabled = opts?.enabled ?? true;
   const [val, setVal] = useState(0);
@@ -196,24 +196,6 @@ export function PrioBadge({ p }: { p: string }) {
   return <Badge tone="neutral">{p}</Badge>;
 }
 
-/* ---------- Tabs ---------- */
-export function Tabs<T extends string>({ options, value, onChange }: {
-  options: Array<{ v: T; label: string }>; value: T; onChange: (v: T) => void;
-}) {
-  return (
-    <div className="glass rounded-full p-1 inline-flex gap-1" role="tablist">
-      {options.map((o) => (
-        <button key={o.v} role="tab" aria-selected={value === o.v} onClick={() => onChange(o.v)}
-          className={cn("px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all",
-            value === o.v ? "text-white shadow-glow-sm" : "hover:bg-[#2563EB]/10")}
-          style={value === o.v ? { backgroundImage: "linear-gradient(135deg,#2563EB,#3B82F6)" } : { color: "var(--text-2)" }}>
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 /* ---------- Table ---------- */
 export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
@@ -250,53 +232,8 @@ export function Pagination({ page, total, pageSize, onPage }: {
   );
 }
 
-/* ---------- Modal / Drawer ---------- */
-export function Modal({ open, onClose, title, children, wide }: {
-  open: boolean; onClose: () => void; title?: string; children: React.ReactNode; wide?: boolean;
-}) {
-  useEffect(() => {
-    if (!open) return;
-    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", fn);
-    return () => window.removeEventListener("keydown", fn);
-  }, [open, onClose]);
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn("glass rounded-2xl p-6 relative w-full shadow-card animate-rise", wide ? "max-w-3xl" : "max-w-lg")}>
-        {title && <h3 className="font-bold text-lg mb-4" style={{ color: "var(--text-1)" }}>{title}</h3>}
-        {children}
-      </div>
-    </div>
-  );
-}
-
-export function Drawer({ open, onClose, title, children }: {
-  open: boolean; onClose: () => void; title?: string; children: React.ReactNode;
-}) {
-  useEffect(() => {
-    if (!open) return;
-    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", fn);
-    return () => window.removeEventListener("keydown", fn);
-  }, [open, onClose]);
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-md glass border-l p-6 overflow-y-auto animate-rise" style={{ borderColor: "var(--border)" }}>
-        {title && <h3 className="font-bold text-lg mb-4" style={{ color: "var(--text-1)" }}>{title}</h3>}
-        {children}
-      </aside>
-    </div>
-  );
-}
-
 /* ---------- Inputs ---------- */
-export const inputCls = "w-full rounded-xl px-3.5 py-2.5 text-sm glass placeholder:text-slate-400 focus:border-[rgba(37,99,235,0.55)] focus:outline-none transition-colors";
-export const btnPrimary = "inline-flex items-center justify-center gap-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2 rounded-full transition-all hover:-translate-y-px shadow-glow-sm";
-export const btnGhost = "inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-full glass transition-all hover:border-[rgba(37,99,235,0.45)]";
+const inputCls = "w-full rounded-xl px-3.5 py-2.5 text-sm glass placeholder:text-slate-400 focus:border-[rgba(37,99,235,0.55)] focus:outline-none transition-colors";
 
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cn(inputCls, props.className)} style={{ color: "var(--text-1)", ...props.style }} />;
@@ -318,42 +255,12 @@ export function Field({ label, children }: { label: string; children: React.Reac
   );
 }
 
-/* ---------- Toast ---------- */
-type Toast = { id: number; msg: string; tone?: "success" | "error" | "info" };
-const ToastCtx = createContext<(msg: string, tone?: Toast["tone"]) => void>(() => {});
-export const useToast = () => useContext(ToastCtx);
-export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<Toast[]>([]);
-  const push = useCallback((msg: string, tone: Toast["tone"] = "info") => {
-    const id = Date.now() + Math.random();
-    setItems((p) => [...p.slice(-3), { id, msg, tone }]);
-    setTimeout(() => setItems((p) => p.filter((t) => t.id !== id)), 3800);
-  }, []);
-  return (
-    <ToastCtx.Provider value={push}>
-      {children}
-      <div className="fixed bottom-5 right-5 z-[60] space-y-2 w-[320px]" aria-live="polite">
-        {items.map((t) => (
-          <div key={t.id} className="glass rounded-xl px-4 py-3 text-sm shadow-card animate-rise border-l-2"
-            style={{
-              color: "var(--text-1)",
-              borderLeftColor: t.tone === "success" ? "#14B8A6" : t.tone === "error" ? "#EF4444" : "#2563EB",
-            }}>{t.msg}</div>
-        ))}
-      </div>
-    </ToastCtx.Provider>
-  );
-}
-
 /* ---------- Skeleton / Empty / Loading / Err ---------- */
-export function Skeleton({ className }: { className?: string }) {
+function Skeleton({ className }: { className?: string }) {
   return <div className={cn("skeleton rounded-lg", className || "h-4 w-full")} />;
 }
-export function SkeletonCard() {
+function SkeletonCard() {
   return <div className="glass rounded-2xl p-5 space-y-3"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-8 w-2/3" /><Skeleton className="h-4 w-full" /></div>;
-}
-export function TableSkeleton({ rows = 6 }: { rows?: number }) {
-  return <div className="space-y-2 py-2">{Array.from({ length: rows }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}</div>;
 }
 
 export function EmptyState({ icon, title, hint, action }: {

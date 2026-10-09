@@ -27,6 +27,7 @@ out/
 dist/
 build/
 *.log
+*.tsbuildinfo
 
 # OS / editors
 .DS_Store

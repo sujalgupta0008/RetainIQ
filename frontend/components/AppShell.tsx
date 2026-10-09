@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { api, logout } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
-import { Avatar, ToastProvider, Tooltip } from "@/components/ui";
+import { Avatar, Tooltip } from "@/components/ui";
 import {
   LayoutDashboard, Users, ShieldAlert, PieChart as PieIcon, Star, Calculator,
   Megaphone, FlaskConical, BarChart3, Bot, Database, Settings, LogOut,
@@ -210,5 +210,5 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  return <ToastProvider><Shell>{children}</Shell></ToastProvider>;
+  return <Shell>{children}</Shell>;
 }

@@ -1,12 +1,12 @@
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export function token(): string | null {
+function token(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("retainiq_token");
 }
-export function authHeaders(): Record<string, string> {
-  const t = token();
-  return t ? { Authorization: `Bearer ${t}` } : {};
+function authHeaders(): Record<string, string> {
+  const tok = token();
+  return tok ? { Authorization: `Bearer ${tok}` } : {};
 }
 export async function api(path: string, opts: RequestInit = {}): Promise<any> {
   const res = await fetch(`${BASE}${path}`, {
@@ -18,9 +18,9 @@ export async function api(path: string, opts: RequestInit = {}): Promise<any> {
     window.location.href = "/login";
     throw new Error("Session expired");
   }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.detail || `Request failed (${res.status})`);
-  return data;
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.detail || `Request failed (${res.status})`);
+  return body;
 }
 export function logout() {
   localStorage.removeItem("retainiq_token");
