@@ -1,6 +1,10 @@
 """RetainIQ backend entrypoint. Run: uvicorn backend.main:app --reload"""
 import logging
 import os
+from .env import load as _load_env
+
+_load_env()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
