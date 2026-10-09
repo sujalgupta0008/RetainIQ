@@ -133,7 +133,7 @@ export default function Dashboard() {
               <span className={chip} style={{ background: "rgba(37,99,235,0.12)", color: "#2563EB" }}><Users size={19} /></span>
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--text-3)" }}>Total Customers</div>
-                <div className="text-[30px] leading-9 font-extrabold tnum tracking-tight" style={{ color: "var(--text-1)" }}>{num(summary.total)}</div>
+                <div className="text-[26px] leading-8 font-extrabold tnum tracking-tight" style={{ color: "var(--text-1)" }}>{num(summary.total)}</div>
               </div>
             </div>
             <div className="text-xs mt-2 tnum" style={{ color: "var(--text-2)" }}>across {data.segments.segments.length} segments · median CLV {inr(data.segments.median_clv)}</div>
@@ -152,7 +152,7 @@ export default function Dashboard() {
                   <span className={chip} style={{ background: "rgba(249,115,22,0.12)", color: "#F97316" }}><ShieldAlert size={19} /></span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--text-3)" }}>At Risk</span>
                 </div>
-                <div className="text-[30px] leading-9 font-extrabold tnum tracking-tight" style={{ color: "var(--text-1)" }}>{num(atRisk)}</div>
+                <div className="text-[26px] leading-8 font-extrabold tnum tracking-tight" style={{ color: "var(--text-1)" }}>{num(atRisk)}</div>
               </div>
               <div className="ml-auto text-right">
                 <div className="text-xl font-extrabold tnum text-orange-600 dark:text-orange-400">{atRiskPct}%</div>
@@ -172,7 +172,7 @@ export default function Dashboard() {
               <span className={chip} style={{ background: "rgba(20,184,166,0.12)", color: "#14B8A6" }}><IndianRupee size={19} /></span>
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--text-3)" }}>Retention Opportunity</div>
-                <div className="text-[30px] leading-9 font-extrabold tnum tracking-tight text-teal-600 dark:text-teal-300">{inr(summary.expected_protected)}</div>
+                <div className="text-[26px] leading-8 font-extrabold tnum tracking-tight text-teal-600 dark:text-teal-300">{inr(summary.expected_protected)}</div>
               </div>
             </div>
             <div className="text-xs mt-2 tnum" style={{ color: "var(--text-2)" }}>expected protected · {num(summary.campaigns)} campaigns · ROI {summary.expected_roi_pct}%</div>

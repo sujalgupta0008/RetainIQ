@@ -15,7 +15,17 @@ Playwright, deviceScaleFactor 1, 100% zoom, light theme, prod build. Shots: `doc
 | 390x844 | 1535 | 844 | YES | 691px (stacked) |
 Content is ~1068px tall fixed (grid + hero + card don't shrink). Only 1080p fits.
 
-## Phase 2 — Global scale (TODO)
+## Phase 2 — Global scale (DONE)
+- `html { font-size: 16px }` below lg (mobile readability unchanged); at ≥1024px
+  `clamp(13px, 100vw/105, 14.5px)` → 1440px ≈ 13.7px, 1366px ≈ 13px, 1920px capped 14.5px.
+  All rem-based Tailwind spacing/type scales together. No zoom/transform hacks.
+- Proportional cuts: `.page-title` 22/26px → 1.15/1.35rem; StatCard 26→22px; dashboard
+  KPIs 30→26px; login H1 → fluid `.hero-title` (max 3rem); Card p-5→p-4; tables fixed
+  `text-[13px]` (≥12px floor everywhere; buttons/labels keep rem sizes).
+- Drive-by: login H1 now uses `var(--text-1)` so dark mode stays readable.
+- Build ✅ tsc ✅.
+
+## Phase 3 — Login one-screen (TODO)
 ## Phase 3 — Login one-screen (TODO)
 ## Phase 4 — Verify (TODO)
 

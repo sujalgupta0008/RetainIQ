@@ -50,6 +50,14 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 16px;
+}
+/* Global scale: ~67–75% look at 100% zoom on desktop. rem-based Tailwind
+   spacing/typography scales together. No CSS zoom/scale transforms. */
+@media (min-width: 1024px) {
+  html {
+    font-size: clamp(13px, calc(100vw / 105), 14.5px);
+  }
 }
 
 body {
@@ -150,6 +158,18 @@ body {
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text-1);
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+@media (min-width: 768px) {
+  .page-title { font-size: 1.35rem; }
+}
+/* fluid hero headline for login */
+.hero-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+  font-size: clamp(1.9rem, 1.2rem + 2.2vw, 3rem);
 }
 .tnum { font-variant-numeric: tabular-nums; }
 

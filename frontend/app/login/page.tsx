@@ -91,7 +91,7 @@ export default function Login() {
             <span className="font-extrabold tracking-tight text-lg" style={{ color: "var(--text-1)" }}>RetainIQ</span>
           </div>
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] gradient-text mb-3">Retention ROI Intelligence</p>
-          <h1 className="text-4xl md:text-[52px] leading-[1.04] font-extrabold tracking-tight" style={{ color: "#0B1A3A" }}>
+          <h1 className="hero-title" style={{ color: "var(--text-1)" }}>
             Stop churn<br />before it starts.
           </h1>
           <p className="mt-4 text-[15px] leading-relaxed" style={{ color: "var(--text-2)" }}>

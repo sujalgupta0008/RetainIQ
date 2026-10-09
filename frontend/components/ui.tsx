@@ -38,7 +38,7 @@ export function Card({ title, sub, children, right, className, glow, hover }: {
   className?: string; glow?: boolean; hover?: boolean;
 }) {
   return (
-    <section className={cn("glass rounded-2xl p-5 shadow-card", hover && "glass-hover", glow && "shadow-glow", className)}>
+    <section className={cn("glass rounded-2xl p-4 shadow-card", hover && "glass-hover", glow && "shadow-glow", className)}>
       {(title || right) && (
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="min-w-0">
@@ -90,7 +90,7 @@ export function StatCard({ label, value, format, hint, delta, deltaTone, spark, 
         <div className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--text-3)" }}>{label}</div>
         {icon && <div style={{ color: "var(--text-3)" }}>{icon}</div>}
       </div>
-      <div className="text-[26px] leading-8 font-extrabold mt-1.5 tnum tracking-tight" style={{ color: "var(--text-1)" }}>{fmt(animated)}</div>
+      <div className="text-[22px] leading-7 font-extrabold mt-1.5 tnum tracking-tight" style={{ color: "var(--text-1)" }}>{fmt(animated)}</div>
       <div className="flex items-center justify-between gap-2 mt-2">
         <div className="flex items-center gap-2 min-w-0">
           {delta && (
@@ -218,7 +218,7 @@ export function Tabs<T extends string>({ options, value, onChange }: {
 export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("overflow-x-auto rounded-xl border", className)} style={{ borderColor: "var(--border)" }}>
-      <table className="w-full text-sm">{children}</table>
+      <table className="w-full text-[13px]">{children}</table>
     </div>
   );
 }
@@ -428,7 +428,7 @@ export function PageHeader({ eyebrow, title, desc, actions }: {
     <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
       <div className="min-w-0">
         {eyebrow && <div className="text-[11px] font-bold uppercase tracking-[0.14em] gradient-text mb-1">{eyebrow}</div>}
-        <h1 className="page-title text-[22px] md:text-[26px] leading-tight" style={{ color: "var(--text-1)" }}>{title}</h1>
+        <h1 className="page-title leading-tight" style={{ color: "var(--text-1)" }}>{title}</h1>
         {desc && <p className="text-[13px] mt-1.5 max-w-2xl" style={{ color: "var(--text-2)" }}>{desc}</p>}
       </div>
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
