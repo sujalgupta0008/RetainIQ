@@ -15,10 +15,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        <ThemeScript />
-      </head>
       <body className={`${inter.variable} ${jbmono.variable} font-sans antialiased`}>
+        <ThemeScript />
         <div className="canvas-bg" aria-hidden />
         <div className="canvas-grid" aria-hidden />
         <ThemeProvider>

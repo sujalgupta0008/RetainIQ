@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { inr, num, pct } from "@/lib/format";
 import { Card, MetricCard, Loading, Field, PageHeader, Button, Badge } from "@/components/ui";
-import { BrandDefs, ChartTooltip, chartColors } from "@/components/ui";
+import { ChartTooltip, chartColors, ChartGradients } from "@/components/ui";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { useRouter } from "next/navigation";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
@@ -30,6 +30,7 @@ export default function ROI() {
     <div className="space-y-4">
       <PageHeader eyebrow="Hero" title="ROI SIMULATOR" desc="Who should we save, what should we spend, will it be profitable? All outputs are estimates."
         actions={<Badge tone="brand">HERO FEATURE</Badge>} />
+      <ChartGradients />
       <div className="grid md:grid-cols-[320px_1fr] gap-4 items-start">
         <Reveal>
           <Card glow title="Inputs" sub="Charts update live">
@@ -70,12 +71,11 @@ export default function ROI() {
             <Card title="Sensitivity analysis" sub="Same audience, scaled success assumptions">
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart data={scenarios.map((row: any) => ({ name: row.name, roi: row.roi_pct, net: row.net }))}>
-                  <BrandDefs id="roi" />
                   <XAxis dataKey="name" tick={{ fontSize: 12, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 12, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                  <Bar dataKey="roi" name="ROI %" radius={8} fill="url(#roi-bar)">
-                    {scenarios.map((_: any, i: number) => <Cell key={i} fill="url(#roi-bar)" />)}
+                  <Bar dataKey="roi" name="ROI %" radius={8} fill="url(#rq-bar)">
+                    {scenarios.map((_: any, i: number) => <Cell key={i} fill="url(#rq-bar)" />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { inr, num } from "@/lib/format";
 import { Card, Loading, Err, PageHeader, StatCard, Table, THead, TH, TD, TRow, Badge } from "@/components/ui";
-import { BrandDefs, ChartTooltip, chartColors } from "@/components/ui";
+import { ChartTooltip, chartColors, ChartGradients } from "@/components/ui";
 import { Reveal, Stagger, StaggerItem, Tilt } from "@/components/motion";
 import ChurnOrb from "@/components/ChurnOrb";
 import { Users, ShieldAlert, IndianRupee, Target, Wallet, Receipt, Percent, Crosshair } from "lucide-react";
@@ -40,6 +40,7 @@ export default function Dashboard() {
         desc="Who to save, what to do, what it costs, and expected return. All figures computed live from the database; predictions are estimates."
         actions={<Link href="/roi-simulator" className="inline-flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-glow-sm hover:-translate-y-px transition-all" style={{ backgroundImage: "linear-gradient(135deg,#C026D3,#EC2F8B 50%,#FF4D6D)" }}>Open ROI Simulator</Link>}
       />
+      <ChartGradients />
 
       <Stagger className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
@@ -67,7 +68,6 @@ export default function Dashboard() {
           <Card title="Churn risk distribution" sub="Low <35% · Medium 35–60% · High ≥60%">
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <BrandDefs id="dash" />
                 <Pie data={data.riskDist} dataKey="count" nameKey="band" outerRadius={80} innerRadius={46} paddingAngle={3} strokeWidth={0}>
                   {data.riskDist.map((r: any, i: number) => <Cell key={i} fill={riskColor(r.band)} />)}
                 </Pie>
@@ -87,10 +87,9 @@ export default function Dashboard() {
           <Card title="Revenue at risk by segment (est.)">
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={data.revenueBySeg} layout="vertical" margin={{ left: 8, right: 12 }}>
-                <BrandDefs id="seg" />
                 <XAxis type="number" hide /><YAxis type="category" dataKey="segment" width={80} tick={{ fontSize: 12, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip formatter={(v: any) => inr(Number(v))} />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                <Bar dataKey="rar" fill="url(#seg-bar)" radius={6} />
+                <Bar dataKey="rar" fill="url(#rq-bar)" radius={6} />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -99,13 +98,12 @@ export default function Dashboard() {
           <Card title="Risk trend" sub="Average predicted risk over time">
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={data.riskTrend.map((x: any) => ({ ...x, label: x.point }))} margin={{ left: -12, right: 8 }}>
-                <BrandDefs id="trend" />
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="avg_risk" stroke="none" fill="url(#trend-fill)" name="avg risk %" />
-                <Line type="monotone" dataKey="avg_risk" stroke="url(#trend-line)" strokeWidth={2.5} dot={false} name="avg risk %" />
+                <Area type="monotone" dataKey="avg_risk" stroke="none" fill="url(#rq-fill)" name="avg risk %" />
+                <Line type="monotone" dataKey="avg_risk" stroke="url(#rq-line)" strokeWidth={2.5} dot={false} name="avg risk %" />
               </LineChart>
             </ResponsiveContainer>
           </Card>

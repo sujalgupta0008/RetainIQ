@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Card, Loading, Err, Button, PageHeader } from "@/components/ui";
-import { BrandDefs, ChartTooltip, chartColors } from "@/components/ui";
+import { ChartTooltip, chartColors, ChartGradients } from "@/components/ui";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -32,16 +32,16 @@ export default function Risk() {
       <PageHeader eyebrow="Model" title="RISK & MODEL" desc="XGBoost primary (HistGradientBoosting fallback) + Logistic Regression baseline. Optimized for AUC, not just accuracy."
         actions={<Button variant="secondary" loading={busy} onClick={retrain}>Retrain model</Button>} />
       {msg && <p className="text-[13px]" style={{ color: "var(--text-2)" }}>{msg}</p>}
+      <ChartGradients />
       <div className="grid md:grid-cols-2 gap-4 items-start">
         <Reveal>
           <Card title="Risk distribution">
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={barData}>
-                <BrandDefs id="risk" />
                 <XAxis dataKey="band" tick={{ fontSize: 12, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                <Bar dataKey="count" radius={8} />
+                <Bar dataKey="count" radius={8} fill="url(#rq-bar)" />
               </BarChart>
             </ResponsiveContainer>
           </Card>

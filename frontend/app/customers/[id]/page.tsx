@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { inr, pct, num } from "@/lib/format";
 import { Card, RiskBadge, PrioBadge, Loading, Err, PageHeader, StatCard, Avatar } from "@/components/ui";
-import { BrandDefs, ChartTooltip, chartColors } from "@/components/ui";
+import { ChartTooltip, chartColors, ChartGradients } from "@/components/ui";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area } from "recharts";
 
@@ -23,6 +23,7 @@ export default function CustomerDetail({ params }: { params: { id: string } }) {
         desc={`${cust.age}y · ${cust.region} · tenure ${cust.tenure} mo · income ${inr(cust.income)}`}
         actions={<><RiskBadge band={cust.band} /><PrioBadge p={cust.priority} /></>}
       />
+      <ChartGradients />
       <Reveal>
         <div className="flex items-center gap-3 glass rounded-2xl p-4">
           <Avatar name={cust.name} size={52} risk={cust.band} />
@@ -64,13 +65,12 @@ export default function CustomerDetail({ params }: { params: { id: string } }) {
           <Card title="Risk trajectory" sub="Predicted churn probability over 90 days">
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={traj}>
-                <BrandDefs id="cust" />
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                 <XAxis dataKey="point" tick={{ fontSize: 12, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: chartColors.tick }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="risk" stroke="none" fill="url(#cust-fill)" name="risk %" />
-                <Line type="monotone" dataKey="risk" stroke="url(#cust-line)" strokeWidth={2.5} dot={{ r: 3, fill: "#FF4D6D", strokeWidth: 0 }} name="risk %" />
+                <Area type="monotone" dataKey="risk" stroke="none" fill="url(#rq-fill)" name="risk %" />
+                <Line type="monotone" dataKey="risk" stroke="url(#rq-line)" strokeWidth={2.5} dot={{ r: 3, fill: "#FF4D6D", strokeWidth: 0 }} name="risk %" />
               </LineChart>
             </ResponsiveContainer>
           </Card>

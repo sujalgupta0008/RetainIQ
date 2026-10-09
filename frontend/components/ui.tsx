@@ -442,6 +442,29 @@ export function BrandDefs({ id = "brand" }: { id?: string }) {
     </defs>
   );
 }
+/**
+ * Document-wide gradient defs. Render once per page OUTSIDE recharts charts
+ * (recharts drops custom wrapper components placed inside charts, which made
+ * gradient fills silently transparent). Charts reference url(#rq-bar) etc.
+ */
+export function ChartGradients() {
+  return (
+    <svg width="0" height="0" className="absolute" aria-hidden focusable="false">
+      <defs>
+        <linearGradient id="rq-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#EC2F8B" stopOpacity={0.55} />
+          <stop offset="100%" stopColor="#EC2F8B" stopOpacity={0.02} />
+        </linearGradient>
+        <linearGradient id="rq-bar" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#C026D3" /><stop offset="55%" stopColor="#EC2F8B" /><stop offset="100%" stopColor="#FF4D6D" />
+        </linearGradient>
+        <linearGradient id="rq-line" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#EC2F8B" /><stop offset="100%" stopColor="#FF4D6D" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
 export function ChartTooltip({ active, payload, label, formatter }: any) {
   if (!active || !payload?.length) return null;
   return (

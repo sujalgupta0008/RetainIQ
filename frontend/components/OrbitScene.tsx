@@ -75,18 +75,18 @@ function OrbitAvatar({ index, total, color, paused }: { index: number; total: nu
     const t = paused || reduced.current ? phase * 10 : state.clock.elapsedTime * speed + phase * 4;
     g.position.set(Math.cos(t) * radius, Math.sin(t * 0.9) * radius * Math.sin(tilt) * 0.6, Math.sin(t) * radius * 0.55);
     const s = 1 + Math.sin(state.clock.elapsedTime * 1.4 + index) * 0.08;
-    g.scale.setScalar(0.16 * s + 0.1);
+    g.scale.setScalar(0.075 * s + 0.035);
   });
 
   return (
     <group ref={ref}>
       <mesh>
         <sphereGeometry args={[1, 20, 20]} />
-        <meshStandardMaterial color="#232327" roughness={0.3} metalness={0.2} />
+        <meshStandardMaterial color="#4a4a52" emissive={color} emissiveIntensity={0.35} roughness={0.35} metalness={0.1} />
       </mesh>
-      <mesh scale={1.35}>
+      <mesh scale={1.5}>
         <sphereGeometry args={[1, 20, 20]} />
-        <meshBasicMaterial color={color} transparent opacity={0.35} side={THREE.BackSide} />
+        <meshBasicMaterial color={color} transparent opacity={0.28} side={THREE.BackSide} />
       </mesh>
     </group>
   );
