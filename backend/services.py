@@ -5,10 +5,6 @@ import jwt
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")
 SEED = int(os.getenv("SEED", "42"))
 
-FEATURES = ["tenure_months","age","income","avg_balance","balance_trend","txn_freq",
- "avg_txn","txn_trend","card_usage","product_count","has_loan","complaints",
- "resolution_days","logins","engagement_decline","inactivity_days","failed_rate"]
-
 ACTIONS = {
  "fee_waiver": {"cost": 500, "success": 0.22, "label": "Fee waiver"},
  "cashback": {"cost": 1200, "success": 0.28, "label": "Cashback offer"},
@@ -202,6 +198,32 @@ def audience_query(db, tenant_id, f: dict):
         q = q.filter(Customer.segment == f["segment"])
     return q.all()
 
+# ---------- product risk (shared by dashboard + analyst; batched: 3 queries total) ----------
+def product_risk_rows(db, tenant_id):
+    """Per-product risk aggregation, sorted by revenue at risk desc.
+
+    Same numbers as the old per-product N+1 loops, but the mappings, values and bands
+    are each fetched once and aggregated in Python.
+    """
+    from .models import CustomerProduct, CustomerValue, ChurnPrediction, Product
+    cps = db.query(CustomerProduct).filter_by(tenant_id=tenant_id).all()
+    if not cps:
+        return []
+    by_prod: dict[int, list[int]] = {}
+    for cp in cps:
+        by_prod.setdefault(cp.product_id, []).append(cp.customer_id)
+    cids = [cp.customer_id for cp in cps]
+    rar_by_cust = {v.customer_id: v.revenue_at_risk for v in db.query(CustomerValue).filter(
+        CustomerValue.customer_id.in_(cids)).all()}
+    band_by_cust = {p.customer_id: p.band for p in db.query(ChurnPrediction).filter(
+        ChurnPrediction.customer_id.in_(cids)).all()}
+    names = {p.id: p.name for p in db.query(Product).all()}
+    out = [{"product": names.get(pid, "?"), "customers": len(ids),
+            "high_risk": sum(1 for c in ids if band_by_cust.get(c) == "High"),
+            "rar": round(sum(rar_by_cust.get(c, 0) for c in ids), 2)}
+           for pid, ids in by_prod.items()]
+    return sorted(out, key=lambda x: -x["rar"])
+
 # ---------- AI analyst ----------
 CANONICAL_QUESTIONS = [
  "Why did churn risk increase this month?",
@@ -213,7 +235,7 @@ CANONICAL_QUESTIONS = [
 
 def analyst_context(db, tenant_id):
     from .models import (Customer, ChurnPrediction, CustomerValue, Recommendation,
-                         Campaign, Experiment, ExperimentResult, Product, CustomerProduct)
+                         Campaign, Experiment, ExperimentResult)
     from sqlalchemy import func
     total = db.query(Customer).filter_by(tenant_id=tenant_id).count()
     hi = db.query(ChurnPrediction).filter_by(tenant_id=tenant_id, band="High").count()
@@ -241,19 +263,7 @@ def analyst_context(db, tenant_id):
             "roi_pct": round(res.roi * 100, 1) if res else None,
             "revenue": res.revenue if res else 0, "lift": res.lift if res else 0,
             "cost": res.cost if res else 0})
-    prods = []
-    for p in db.query(Product).all():
-        cids = [x.customer_id for x in db.query(CustomerProduct).filter_by(
-            tenant_id=tenant_id, product_id=p.id).all()]
-        if not cids:
-            continue
-        vals = db.query(CustomerValue).filter(CustomerValue.customer_id.in_(cids)).all()
-        preds = {x.customer_id: x for x in db.query(ChurnPrediction).filter(
-            ChurnPrediction.customer_id.in_(cids)).all()}
-        prods.append({"product": p.name, "customers": len(cids),
-            "high_risk": sum(1 for c in cids if preds.get(c) and preds[c].band == "High"),
-            "rar": round(sum(v.revenue_at_risk for v in vals), 2)})
-    prods.sort(key=lambda x: -x["rar"])
+    prods = product_risk_rows(db, tenant_id)
     model = None
     try:
         import json as _j, os as _o

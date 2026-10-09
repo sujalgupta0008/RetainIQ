@@ -46,17 +46,8 @@ def rev_seg(u: M.User = Depends(current_user), db: Session = Depends(get_db)):
 
 @r.get("/product-risk")
 def prod_risk(u: M.User = Depends(current_user), db: Session = Depends(get_db)):
-    t = _t(u)
-    out = []
-    for p in db.query(M.Product).all():
-        cids = [x.customer_id for x in db.query(M.CustomerProduct).filter_by(tenant_id=t, product_id=p.id).all()]
-        if not cids: continue
-        vals = db.query(M.CustomerValue).filter(M.CustomerValue.customer_id.in_(cids)).all()
-        preds = {x.customer_id: x for x in db.query(M.ChurnPrediction).filter(M.ChurnPrediction.customer_id.in_(cids)).all()}
-        hi = sum(1 for c in cids if preds.get(c) and preds[c].band == "High")
-        out.append({"product": p.name, "customers": len(cids), "high_risk": hi,
-                    "rar": round(sum(v.revenue_at_risk for v in vals), 2)})
-    return sorted(out, key=lambda x: -x["rar"])
+    from ..services import product_risk_rows
+    return product_risk_rows(db, _t(u))
 
 @r.get("/risk-trend")
 def trend(u: M.User = Depends(current_user), db: Session = Depends(get_db)):

@@ -51,5 +51,13 @@ Rules: identical behavior/APIs; never touch .env, *.db, CSVs, *.pkl/*.sha256, te
   `node_modules/` kept (needed to build), gitignored. No `public/` dir → no orphan assets.
 - Large tracked files (>1MB): only `backend/ml/artifacts/model.pkl` (1.08MB) — PROTECTED model
   artifact, kept + listed. `.gitignore` verified correct (covers db/coverage/caches/next).
-## Phase 5 — Optimizations (pending)
+## Phase 5 — Optimizations (DONE)
+- Shared `product_risk_rows()` in services.py (batched: 4 SELECTs) replaces two duplicated
+  N+1 loops (dashboard.prod_risk now a thin wrapper; analyst_context uses it too). Measured on
+  real retainiq.db (6 products): **19 queries → 4** (~5x fewer round trips), byte-identical
+  output shape (covered by test_endpoints: product-risk, analytics/products, AI analyst).
+- Removed dead `FEATURES` constant (0 refs; train/infer keep their own lists). Net: ~45 fewer lines.
+- Deliberately skipped: `next/dynamic` chart lazy-load (churn/risk without measurable need —
+  shared First Load JS already 87.5kB), customers-list SQL pagination (fine at this scale),
+  formatting normalization (no project formatter configured).
 ## Phase 6 — Verification (pending)
