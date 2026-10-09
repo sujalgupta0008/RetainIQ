@@ -1,5 +1,5 @@
 """Train churn model from DB. Run: python -m backend.ml.train"""
-import os, json, pickle
+import os, json, pickle  # nosec: B403 - pickle writes trusted local artifacts; loads are sha256-verified in ml/infer.py
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split

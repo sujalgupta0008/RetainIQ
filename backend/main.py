@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from .database import engine, Base
-from . import models  # noqa: register tables
+from . import models  # noqa: F401 -- import registers tables on Base.metadata
 
 log = logging.getLogger("retainiq")
 
@@ -15,8 +15,8 @@ app = FastAPI(title="RetainIQ API", version="1.0.0",
 
 # FIX (S03): fail-loud on default JWT secret in production. Tests/dev keep the fallback
 # with a warning so the suite runs without env setup.
-_JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")  # nosec B105 -- dev-only fallback; prod refuses to start (see below)
-if _JWT_SECRET == "dev-secret-change-me":
+_JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")  # nosec: B105 - dev-only fallback; prod refuses to start (see below)
+if _JWT_SECRET == "dev-secret-change-me":  # nosec: B105 - comparing against dev default to refuse prod start
     if os.getenv("RETAINIQ_ENV", "dev").lower().startswith("prod"):
         raise RuntimeError("REFUSING TO START: set a strong JWT_SECRET in production")
     log.warning("JWT_SECRET is the dev default — set a long random value via env (see .env.example)")

@@ -90,9 +90,14 @@ Remaining docs (ARCH/API/SETUP/DEMO/FEATURES/SIMULATOR) skimmed for run instruct
    11. retrain-empty guard; 12. pagination caps; 13. test_api conversion; 14. login-page password bug;
    15. next.config headers; 16. hygiene (.env.example, SECURITY.md, CI, requirements pins).
 
-## Phase 6 — Verification (pending)
-- Full pytest + coverage, ruff/bandit/pip-audit/npm audit, backend boot + smoke (login→dashboard→
-  simulate→campaign→AI), frontend `tsc`/`build` if time permits.
+## Phase 6 — Verification (DONE 2026-10-06)
+- `pytest backend/tests/`: **66 passed**, coverage **89%** total.
+- Ruff serious subset (F821/E9/E722): pass. Bandit: **0 issues**. pip-audit: `-r` env-broken (numpy
+  metadata/py3.13) — `--local` triaged (§D02). npm audit: next 14.2.5→14.2.35, build passes; residual
+  needs Next 15 (breaking).
+- Live uvicorn boot verified: health, security headers, login→dashboard→simulate→AI,
+  404/422/403 guards. `retainiq.db` untouched (7443 pre-existing dev rows).
+- Frontend `npm run build` passes. Final: AUDIT_REPORT.md written; branch ready for review.
 
 ---
 Log: Phases run in order; commits after each phase. Secrets: none found in repo besides default
