@@ -33,7 +33,17 @@ overlaps grid edge on lg, inline on mobile) → campaign table retained.
 - Dropped: old quadrant tiles + revenue-by-segment bars (same data lives on Segments page).
 - Deleted `ChurnOrb.tsx` (superseded by KPI mini-donut) and dead `BrandDefs` export.
 
-## Phase 3 — 3D/motion light version (TODO)
+## Phase 3 — 3D/motion light version (DONE)
+- Login split: left navy headline + supporting text + trust chips + “Try the live demo”
+  (reuses demo-login logic) + focus-form button; right = new `FloatingDash` (pure CSS 3D:
+  perspective tilt board, depth shadows, SVG area chart, 3 bobbing glass cards, platform glow)
+  with the sign-in card overlapping. Zero WebGL on the light theme.
+- Removed R3F: deleted `OrbitScene`/`CustomerOrbit`, uninstalled `three`,
+  `@react-three/fiber`, `@types/three` (lockfile updated consistently via npm).
+- Motion: existing Reveal/Stagger/Tilt reused (150–400ms); global reduced-motion guard
+  freezes the bobbing; tilt is mouse-only.
+
+## Phase 4 — Re-theme remaining pages (TODO)
 ## Phase 3 — 3D/motion light version (TODO)
 ## Phase 4 — Re-theme remaining pages (TODO)
 ## Phase 5 — Verify (TODO)
