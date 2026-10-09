@@ -1,6 +1,5 @@
 """All domain logic as plain functions. ROI formulas centralized here (tested)."""
-import os, hashlib, secrets, random
-from datetime import datetime, timedelta
+import os, hashlib
 import jwt
 
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")

@@ -49,10 +49,6 @@ export function Loading({ msg }: { msg?: string }) {
   return <div className="py-16 text-center text-slate-500 text-sm animate-pulse">{msg || "Loading…"}</div>;
 }
 
-export function Empty({ msg }: { msg: string }) {
-  return <div className="py-12 text-center text-slate-400 text-sm border border-dashed border-slate-200 rounded-xl bg-slate-50">{msg}</div>;
-}
-
 export function Err({ msg, retry }: { msg: string; retry?: () => void }) {
   return (
     <div className="py-10 text-center">

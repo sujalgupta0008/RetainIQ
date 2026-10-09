@@ -1,7 +1,5 @@
 """Explainability stub (SHAP when available, else services fallback)."""
 def shap_drivers(feats: dict, medians: dict):
-    try:
-        import shap  # optional
-        return None  # SHAP path used in train-time analysis; per-request uses fallback for speed
-    except Exception:
-        return None
+    # No heavy optional deps: per-request explanations use the deterministic
+    # services.explain_fallback (SHAP path reserved for offline train-time analysis).
+    return None

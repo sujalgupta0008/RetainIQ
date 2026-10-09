@@ -1,12 +1,12 @@
 """Synthetic seed. Run: python -m backend.seed [--reset]  (deterministic, SEED=42)"""
-import os, sys, random, math
+import os, sys, random
 from datetime import datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.database import engine, SessionLocal, Base
 from backend import models as M
 from backend.services import (calc_clv, calc_rar, band, priority_of, pick_action,
-    explain_fallback, deterioration, hash_pw, audit, FEATURES, ACTIONS)
+    explain_fallback, hash_pw, ACTIONS)
 
 SEED = int(os.getenv("SEED", "42"))
 FIRST = ["Aarav","Priya","Rohan","Sneha","Arjun","Meera","Kabir","Ananya","Vikram","Divya","Aditya","Kavya","Nikhil","Riya","Suresh","Lakshmi","Manoj","Pooja","Kiran","Anil"]
@@ -129,7 +129,6 @@ def run(reset=False):
             clvs.append(clv); rars.append(rar)
             tmp[cf.customer_id] = (p, clv, contrib, rar)
         cmax, rmax = max(clvs), max(rars)
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
         for cf in cfs:
             p, clv, contrib, rar = tmp[cf.customer_id]
             drivers, sent = explain_fallback(cf.f, p, med)
