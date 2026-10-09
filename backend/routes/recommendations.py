@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import models as M
@@ -6,8 +6,10 @@ from ..deps import current_user
 
 r = APIRouter(prefix="/api/recommendations", tags=["recommendations"])
 
+
 @r.get("")
-def all_recs(priority: str = "", limit: int = 100, u: M.User = Depends(current_user), db: Session = Depends(get_db)):
+def all_recs(priority: str = Query(default="", max_length=30), limit: int = Query(default=100, ge=1, le=500),
+             u: M.User = Depends(current_user), db: Session = Depends(get_db)):
     q = db.query(M.Customer, M.ChurnPrediction, M.CustomerValue, M.Recommendation).join(
         M.ChurnPrediction, M.ChurnPrediction.customer_id == M.Customer.id).join(
         M.CustomerValue, M.CustomerValue.customer_id == M.Customer.id).join(

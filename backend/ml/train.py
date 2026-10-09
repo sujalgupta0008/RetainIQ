@@ -52,6 +52,15 @@ def main():
     with open(os.path.join(art, "scaler.pkl"), "wb") as f: pickle.dump(sc, f)
     with open(os.path.join(art, "features.json"), "w") as f: json.dump(FEATS, f)
     with open(os.path.join(art, "metrics.json"), "w") as f: json.dump(metrics, f, indent=2)
+    # Integrity sidecars verified by ml/infer.py (S09). Hash the exact bytes written.
+    import hashlib
+    for name in ("model.pkl", "baseline.pkl", "scaler.pkl"):
+        p = os.path.join(art, name)
+        h = hashlib.sha256()
+        with open(p, "rb") as f:
+            h.update(f.read())
+        with open(p + ".sha256", "w") as f:
+            f.write(f"{h.hexdigest()}  {name}\n")
     print("saved artifacts ->", art)
 
 if __name__ == "__main__":

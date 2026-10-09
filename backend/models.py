@@ -1,10 +1,13 @@
 """SQLAlchemy models. Every tenant-owned table has tenant_id + index."""
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Boolean, Index, JSON
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import Base
 
+
 def now():
-    return datetime.utcnow()
+    # Timezone-aware UTC; stored naive-compatible by SQLAlchemy dialects.
+    # (Previously datetime.utcnow(), deprecated in Python 3.12+.)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 class Tenant(Base):
     __tablename__ = "tenants"

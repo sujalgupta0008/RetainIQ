@@ -17,9 +17,11 @@ export default function Login() {
     e?.preventDefault();
     setBusy(true); setErr("");
     try {
+      // FIX (S11): the typed password must be sent for normal sign-in; the hardcoded
+      // demo password is used ONLY for the one-click demo buttons.
       const res = await fetch(`${BASE}/api/auth/login`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: em || email, password: "demo123" }),
+        body: JSON.stringify({ email: em || email, password: em ? "demo123" : password }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.detail || "Login failed");

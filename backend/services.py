@@ -27,8 +27,9 @@ def hash_pw(pw: str, salt: str) -> str:
 
 def make_token(user_id: int, tenant_id: int, role: str) -> str:
     import datetime as dt
+    now_utc = dt.datetime.now(dt.timezone.utc)
     payload = {"sub": str(user_id), "tenant_id": tenant_id, "role": role,
-               "exp": dt.datetime.utcnow() + dt.timedelta(hours=24)}
+               "iat": now_utc, "exp": now_utc + dt.timedelta(hours=24)}
     return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
 def decode_token(t: str) -> dict:
@@ -51,6 +52,13 @@ def calc_rar(churn_proba, clv) -> float:
 
 def calc_roi(targeted: int, success_rate: float, avg_value: float, unit_cost: float, reach: float = 1.0) -> dict:
     """Central ROI engine. All estimates labeled by callers."""
+    # Defensive clamping so out-of-range callers (or stale clients) can't produce
+    # nonsensical/negative-money outputs; Pydantic schemas enforce the same bounds.
+    targeted = max(0, int(targeted or 0))
+    success_rate = min(1.0, max(0.0, float(success_rate or 0.0)))
+    avg_value = max(0.0, float(avg_value or 0.0))
+    unit_cost = max(0.0, float(unit_cost or 0.0))
+    reach = min(1.0, max(0.0, float(reach if reach is not None else 1.0)))
     t = int(round(targeted*reach))
     retained = t*success_rate
     cost = t*unit_cost
@@ -140,7 +148,9 @@ def explain_fallback(feats: dict, proba: float, medians: dict) -> tuple:
         elif k in high_bad:
             dev = (v - m)/abs(m) if m else 0
         elif k in trend_bad_neg:
-            dev = (m - v); dev = max(-1, min(1, -v*3)) if v < 0 else -0.05
+            # Negative balance/txn trend is bad; scale by magnitude, capped at [-1, 1].
+            # (Small positive trends count as mildly protective.)
+            dev = max(-1.0, min(1.0, -v * 3)) if v < 0 else -0.05
         else:
             dev = 0
         scored.append((k, dev))
@@ -275,8 +285,9 @@ def find_customer(db, tenant_id, question: str):
         cand = cand.strip()
         if len(cand) < 3 or cand.lower() in ("the", "top", "best", "high", "risk", "churn"):
             continue
+        # Escape LIKE wildcards so names containing % or _ can't broaden the match.
         c = db.query(Customer).filter(Customer.tenant_id == tenant_id,
-                                      Customer.name.ilike(f"%{cand}%")).first()
+                                      Customer.name.ilike(f"%{escape_like(cand)}%", escape="\\")).first()
         if c:
             p = db.query(ChurnPrediction).filter_by(customer_id=c.id).first()
             v = db.query(CustomerValue).filter_by(customer_id=c.id).first()
@@ -491,8 +502,19 @@ def num_fmt(n):
     except Exception:
         return str(n)
 
+
+def escape_like(s: str) -> str:
+    """Escape SQL LIKE wildcards so user search text can't alter match semantics."""
+    return str(s or "").replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
 def analyst_llm(question: str, ctx: dict) -> str | None:
-    """Call Gemini or OpenAI if keys exist. Returns None on any failure → fallback."""
+    """Call Gemini or OpenAI if keys exist. Returns None on any failure → fallback.
+
+    PRIVACY NOTE: ctx contains customer names + aggregate financial estimates. It is sent
+    to the external provider only when an operator-configured API key exists, truncated to
+    6k chars, and never logged. Self-hosted deployments that must not exfiltrate PII should
+    unset both keys (the deterministic fallback answers everything locally).
+    """
     import json, httpx
     gem = os.getenv("GEMINI_API_KEY"); oai = os.getenv("OPENAI_API_KEY")
     ctx_s = json.dumps(ctx)[:6000]

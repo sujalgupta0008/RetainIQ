@@ -15,8 +15,10 @@ export default function Settings() {
   };
   useEffect(load, []);
   async function sw() {
+    const id = Number(tid);
+    if (!Number.isInteger(id) || id <= 0) { setMsg("Enter a valid numeric Tenant ID."); return; }
     try {
-      const r = await api(`/api/auth/switch?tenant_id=${tid}`, { method: "POST" });
+      const r = await api(`/api/auth/switch?tenant_id=${encodeURIComponent(String(id))}`, { method: "POST" });
       localStorage.setItem("retainiq_token", r.token);
       setMsg(`Switched to ${r.tenant}. Reloading…`);
       setTimeout(() => window.location.href = "/dashboard", 600);

@@ -1,6 +1,6 @@
 """Synthetic seed. Run: python -m backend.seed [--reset]  (deterministic, SEED=42)"""
 import os, sys, random, math
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.database import engine, SessionLocal, Base
@@ -44,7 +44,7 @@ def run(reset=False):
     db.flush()
 
     def make_customers(tenant_id, n, tag):
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         for i in range(n):
             arch = rnd.random()  # loyal .45 / declining .25 / volatile .15 / new .15
             if arch < 0.45: risk_t = "loyal"
@@ -129,7 +129,7 @@ def run(reset=False):
             clvs.append(clv); rars.append(rar)
             tmp[cf.customer_id] = (p, clv, contrib, rar)
         cmax, rmax = max(clvs), max(rars)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         for cf in cfs:
             p, clv, contrib, rar = tmp[cf.customer_id]
             drivers, sent = explain_fallback(cf.f, p, med)
