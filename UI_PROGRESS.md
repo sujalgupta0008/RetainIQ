@@ -1,6 +1,23 @@
-# RetainIQ UI Re-theme — Progress Tracker
-Branch: `feat/ui-retheme` (from `feat/ui-redesign`) · Reference: light blue/navy SaaS dashboard
-Prior redesign report: `docs/UI_REPORT.md` (will be rewritten in Phase 5).
+# RetainIQ login-fit — Progress Tracker
+Branch: `fix/login-fit` (from `feat/ui-retheme`). Goal: 100% zoom looks like 67% zoom; login never scrolls on desktop.
+
+## Phase 1 — Measure (DONE)
+Playwright, deviceScaleFactor 1, 100% zoom, light theme, prod build. Shots: `docs/screenshots/before-fit/`.
+| Viewport | scrollHeight | innerHeight | Scroll? | Overflow |
+|---|---|---|---|---|
+| 1920x1080 | 1080 | 1080 | no | 0 |
+| 1536x864 | 1068 | 864 | YES | 204px |
+| 1440x900 | 1068 | 900 | YES | 168px |
+| 1366x768 | 1068 | 768 | YES | 300px |
+| 1280x720 | 1068 | 720 | YES | 348px |
+| 1024x768 | 1068 | 768 | YES | 300px |
+| 768x1024 | 1489 | 1024 | YES | 465px (stacked) |
+| 390x844 | 1535 | 844 | YES | 691px (stacked) |
+Content is ~1068px tall fixed (grid + hero + card don't shrink). Only 1080p fits.
+
+## Phase 2 — Global scale (TODO)
+## Phase 3 — Login one-screen (TODO)
+## Phase 4 — Verify (TODO)
 
 ## Phase 1 — Tokens (DONE)
 Light is DEFAULT (`lib/theme.tsx` default + anti-flash script + `<html class=light>`); dark =
