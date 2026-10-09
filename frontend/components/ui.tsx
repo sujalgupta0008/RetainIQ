@@ -1,72 +1,459 @@
-import React from "react";
+"use client";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
 
-export function Card({ title, sub, children, right }: { title?: string; sub?: string; children: React.ReactNode; right?: React.ReactNode }) {
+/* ---------- utils ---------- */
+export function cn(...xs: Array<string | false | null | undefined>) {
+  return xs.filter(Boolean).join(" ");
+}
+
+export function useCountUp(target: number, opts?: { duration?: number; enabled?: boolean }) {
+  const duration = opts?.duration ?? 700;
+  const enabled = opts?.enabled ?? true;
+  const [val, setVal] = useState(0);
+  const raf = useRef<number>(0);
+  const reduced = useRef(false);
+  useEffect(() => {
+    try { reduced.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { reduced.current = true; }
+  }, []);
+  useEffect(() => {
+    if (!enabled || !Number.isFinite(target)) { setVal(target || 0); return; }
+    if (reduced.current) { setVal(target); return; }
+    const t0 = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / duration);
+      const e = 1 - Math.pow(1 - p, 3);
+      setVal(target * e);
+      if (p < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, duration, enabled]);
+  return val;
+}
+
+/* ---------- Card ---------- */
+export function Card({ title, sub, children, right, className, glow, hover }: {
+  title?: string; sub?: string; children: React.ReactNode; right?: React.ReactNode;
+  className?: string; glow?: boolean; hover?: boolean;
+}) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+    <section className={cn("glass rounded-2xl p-5 shadow-card", hover && "glass-hover", glow && "shadow-glow", className)}>
       {(title || right) && (
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            {title && <h3 className="font-semibold text-slate-900">{title}</h3>}
-            {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            {title && <h3 className="font-semibold text-[15px] tracking-tight" style={{ color: "var(--text-1)" }}>{title}</h3>}
+            {sub && <p className="text-xs mt-1" style={{ color: "var(--text-2)" }}>{sub}</p>}
           </div>
-          {right}
+          {right && <div className="shrink-0">{right}</div>}
         </div>
       )}
       {children}
+    </section>
+  );
+}
+
+/* Compat MetricCard — restyled, same props */
+export function MetricCard({ label, value, hint, tone }: {
+  label: string; value: string; hint?: string; tone?: "red" | "green" | "amber" | "slate";
+}) {
+  const tones: Record<string, string> = {
+    red: "text-risk-high", green: "text-semantic-success", amber: "text-semantic-warning", slate: "",
+  };
+  return (
+    <div className="glass glass-hover rounded-2xl p-4">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--text-3)" }}>{label}</div>
+      <div className={cn("text-2xl font-bold mt-1.5 tnum tracking-tight", tones[tone || "slate"])} style={tone === "slate" || !tone ? { color: "var(--text-1)" } : undefined}>{value}</div>
+      {hint && <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>{hint}</div>}
     </div>
   );
 }
 
-export function MetricCard({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: "red" | "green" | "amber" | "slate" }) {
-  const tones: Record<string, string> = {
-    red: "text-red-600", green: "text-emerald-600", amber: "text-amber-600", slate: "text-slate-900",
-  };
+/* ---------- StatCard (count-up + sparkline + delta) ---------- */
+export function StatCard({ label, value, format, hint, delta, deltaTone, spark, icon, featured }: {
+  label: string; value: number; format?: (n: number) => string;
+  hint?: string; delta?: string; deltaTone?: "up" | "down" | "neutral";
+  spark?: number[]; icon?: React.ReactNode; featured?: boolean;
+}) {
+  const animated = useCountUp(value);
+  const fmt = format || ((n: number) => n.toLocaleString("en-IN", { maximumFractionDigits: 0 }));
+  const pts = spark && spark.length > 1 ? spark : null;
+  const sparkPath = pts ? (() => {
+    const w = 96, h = 28, min = Math.min(...pts), max = Math.max(...pts);
+    const rng = max - min || 1;
+    return pts.map((v, i) => `${i === 0 ? "M" : "L"}${(i / (pts.length - 1)) * w},${h - 3 - ((v - min) / rng) * (h - 6)}`).join(" ");
+  })() : null;
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-      <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</div>
-      <div className={`text-2xl font-bold mt-1 ${tones[tone || "slate"]}`}>{value}</div>
-      {hint && <div className="text-xs text-slate-400 mt-1">{hint}</div>}
+    <div className={cn("glass rounded-2xl p-4 relative overflow-hidden", featured && "gradient-ring shadow-glow")} data-tilt>
+      {featured && <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(236,47,139,0.28), transparent 70%)" }} />}
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--text-3)" }}>{label}</div>
+        {icon && <div style={{ color: "var(--text-3)" }}>{icon}</div>}
+      </div>
+      <div className="text-[26px] leading-8 font-extrabold mt-1.5 tnum tracking-tight" style={{ color: "var(--text-1)" }}>{fmt(animated)}</div>
+      <div className="flex items-center justify-between gap-2 mt-2">
+        <div className="flex items-center gap-2 min-w-0">
+          {delta && (
+            <span className={cn("text-[11px] font-bold px-1.5 py-0.5 rounded-full tnum",
+              deltaTone === "up" && "bg-emerald-500/15 text-semantic-success",
+              deltaTone === "down" && "bg-rose-500/15 text-risk-high",
+              (!deltaTone || deltaTone === "neutral") && "bg-white/10")}
+              style={(!deltaTone || deltaTone === "neutral") ? { color: "var(--text-2)" } : undefined}>{delta}</span>
+          )}
+          {hint && <span className="text-[11px] truncate" style={{ color: "var(--text-3)" }}>{hint}</span>}
+        </div>
+        {sparkPath && (
+          <svg width="96" height="28" className="shrink-0 opacity-90" aria-hidden>
+            <defs><linearGradient id={`sg-${label.replace(/\W/g, "")}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#EC2F8B" stopOpacity="0.9" /><stop offset="100%" stopColor="#EC2F8B" stopOpacity="0.1" />
+            </linearGradient></defs>
+            <path d={sparkPath} fill="none" stroke="#EC2F8B" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        )}
+      </div>
     </div>
+  );
+}
+
+/* ---------- Button ---------- */
+type BtnVariant = "primary" | "secondary" | "ghost" | "danger";
+export function Button({ variant, size, loading, className, children, ...rest }: {
+  variant?: BtnVariant; size?: "sm" | "md" | "lg"; loading?: boolean;
+  children: React.ReactNode; className?: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const v: Record<BtnVariant, string> = {
+    primary: "text-white border-transparent shadow-glow-sm hover:-translate-y-px hover:shadow-glow",
+    secondary: "glass hover:border-[rgba(236,47,139,0.4)]",
+    ghost: "border-transparent hover:bg-white/5",
+    danger: "bg-semantic-danger/15 text-semantic-danger border-semantic-danger/30 hover:bg-semantic-danger/25",
+  };
+  const s = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-sm", lg: "px-5 py-2.5 text-sm" }[size || "md"];
+  const bg = variant === "primary"
+    ? { backgroundImage: "linear-gradient(135deg,#C026D3,#EC2F8B 50%,#FF4D6D)" }
+    : undefined;
+  return (
+    <button
+      {...rest}
+      disabled={loading || rest.disabled}
+      style={{ color: variant === "primary" ? "#fff" : "var(--text-1)", borderWidth: 1, ...bg }}
+      className={cn("inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-200",
+        "disabled:opacity-60 disabled:pointer-events-none focus-visible:outline-none", v[variant || "primary"], s, className)}>
+      {loading && <Loader2 size={15} className="animate-spin" />}
+      {children}
+    </button>
+  );
+}
+
+/* ---------- Badge ---------- */
+export function Badge({ tone, children, className }: {
+  tone?: "success" | "warning" | "danger" | "info" | "neutral" | "brand";
+  children: React.ReactNode; className?: string;
+}) {
+  const m: Record<string, string> = {
+    success: "bg-emerald-500/12 text-semantic-success border-emerald-500/25",
+    warning: "bg-amber-500/12 text-semantic-warning border-amber-500/25",
+    danger: "bg-rose-500/12 text-risk-high border-rose-500/25",
+    info: "bg-sky-500/12 text-semantic-info border-sky-500/25",
+    neutral: "bg-white/8 border-white/10",
+    brand: "text-white border-transparent",
+  };
+  const t = tone || "neutral";
+  return (
+    <span
+      className={cn("inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full border", m[t], className)}
+      style={t === "brand" ? { backgroundImage: "linear-gradient(135deg,#C026D3,#EC2F8B,#FF4D6D)" } : t === "neutral" ? { color: "var(--text-2)" } : undefined}>
+      {children}
+    </span>
   );
 }
 
 export function RiskBadge({ band }: { band: string }) {
-  const c = band === "High" ? "bg-red-100 text-red-700 border-red-200"
-    : band === "Medium" ? "bg-amber-100 text-amber-700 border-amber-200"
-    : "bg-emerald-100 text-emerald-700 border-emerald-200";
-  return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${c}`}>{band}</span>;
+  if (band === "High") return <Badge tone="danger">High</Badge>;
+  if (band === "Medium") return <Badge tone="warning">Medium</Badge>;
+  return <Badge tone="success">Low</Badge>;
 }
 
 export function PrioBadge({ p }: { p: string }) {
-  const c = p === "Critical" ? "bg-red-600 text-white"
-    : p === "High Priority" ? "bg-orange-100 text-orange-700 border border-orange-200"
-    : p === "Monitor" ? "bg-blue-100 text-blue-700 border border-blue-200"
-    : "bg-slate-100 text-slate-600 border border-slate-200";
-  return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${c}`}>{p}</span>;
+  if (p === "Critical") return <Badge tone="danger">Critical</Badge>;
+  if (p === "High Priority") return <Badge tone="warning">High Priority</Badge>;
+  if (p === "Monitor") return <Badge tone="info">Monitor</Badge>;
+  return <Badge tone="neutral">{p}</Badge>;
+}
+
+/* ---------- Tabs ---------- */
+export function Tabs<T extends string>({ options, value, onChange }: {
+  options: Array<{ v: T; label: string }>; value: T; onChange: (v: T) => void;
+}) {
+  return (
+    <div className="glass rounded-full p-1 inline-flex gap-1" role="tablist">
+      {options.map((o) => (
+        <button key={o.v} role="tab" aria-selected={value === o.v} onClick={() => onChange(o.v)}
+          className={cn("px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all",
+            value === o.v ? "text-white shadow-glow-sm" : "hover:bg-white/5")}
+          style={value === o.v ? { backgroundImage: "linear-gradient(135deg,#C026D3,#EC2F8B,#FF4D6D)" } : { color: "var(--text-2)" }}>
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ---------- Table ---------- */
+export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("overflow-x-auto rounded-xl border", className)} style={{ borderColor: "var(--border)" }}>
+      <table className="w-full text-sm">{children}</table>
+    </div>
+  );
+}
+export function THead({ children }: { children: React.ReactNode }) {
+  return <thead className="sticky top-0 z-10" style={{ background: "var(--elevated)" }}><tr className="text-left text-[11px] uppercase tracking-[0.07em]" style={{ color: "var(--text-3)" }}>{children}</tr></thead>;
+}
+export function TH({ children, right, className }: { children: React.ReactNode; right?: boolean; className?: string }) {
+  return <th className={cn("px-3 py-2.5 font-semibold whitespace-nowrap", right && "text-right", className)}>{children}</th>;
+}
+export function TD({ children, right, className }: { children: React.ReactNode; right?: boolean; className?: string }) {
+  return <td className={cn("px-3 py-2.5 border-t whitespace-nowrap", right && "text-right tnum", className)} style={{ borderColor: "var(--border)", color: "var(--text-1)" }}>{children}</td>;
+}
+export function TRow({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <tr className={cn("transition-colors hover:bg-white/[0.04]", className)}>{children}</tr>;
+}
+
+export function Pagination({ page, total, pageSize, onPage }: {
+  page: number; total: number; pageSize: number; onPage: (p: number) => void;
+}) {
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  return (
+    <div className="flex items-center justify-between mt-3 text-xs" style={{ color: "var(--text-2)" }}>
+      <span className="tnum">Page {page} of {pages} · {total.toLocaleString("en-IN")} total</span>
+      <div className="flex gap-2">
+        <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>Prev</Button>
+        <Button variant="secondary" size="sm" disabled={page >= pages} onClick={() => onPage(page + 1)}>Next</Button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Modal / Drawer ---------- */
+export function Modal({ open, onClose, title, children, wide }: {
+  open: boolean; onClose: () => void; title?: string; children: React.ReactNode; wide?: boolean;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [open, onClose]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className={cn("glass rounded-2xl p-6 relative w-full shadow-card animate-rise", wide ? "max-w-3xl" : "max-w-lg")}>
+        {title && <h3 className="font-bold text-lg mb-4" style={{ color: "var(--text-1)" }}>{title}</h3>}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function Drawer({ open, onClose, title, children }: {
+  open: boolean; onClose: () => void; title?: string; children: React.ReactNode;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [open, onClose]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <aside className="absolute right-0 top-0 h-full w-full max-w-md glass border-l p-6 overflow-y-auto animate-rise" style={{ borderColor: "var(--border)" }}>
+        {title && <h3 className="font-bold text-lg mb-4" style={{ color: "var(--text-1)" }}>{title}</h3>}
+        {children}
+      </aside>
+    </div>
+  );
+}
+
+/* ---------- Inputs ---------- */
+export const inputCls = "w-full rounded-xl px-3.5 py-2.5 text-sm glass placeholder:text-zinc-500 focus:border-[rgba(236,47,139,0.5)] focus:outline-none transition-colors";
+export const btnPrimary = "inline-flex items-center justify-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-full transition-all hover:-translate-y-px shadow-glow-sm";
+export const btnGhost = "inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-full glass transition-all hover:border-[rgba(236,47,139,0.4)]";
+
+export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={cn(inputCls, props.className)} style={{ color: "var(--text-1)", ...props.style }} />;
+}
+export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select {...props} className={cn(inputCls, "appearance-none cursor-pointer", props.className)}
+      style={{ color: "var(--text-1)", background: "var(--elevated)", ...props.style }}>
+      {props.children}
+    </select>
+  );
+}
+export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.07em]" style={{ color: "var(--text-2)" }}>{label}</span>
+      <div className="mt-1.5">{children}</div>
+    </label>
+  );
+}
+
+/* ---------- Toast ---------- */
+type Toast = { id: number; msg: string; tone?: "success" | "error" | "info" };
+const ToastCtx = createContext<(msg: string, tone?: Toast["tone"]) => void>(() => {});
+export const useToast = () => useContext(ToastCtx);
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<Toast[]>([]);
+  const push = useCallback((msg: string, tone: Toast["tone"] = "info") => {
+    const id = Date.now() + Math.random();
+    setItems((p) => [...p.slice(-3), { id, msg, tone }]);
+    setTimeout(() => setItems((p) => p.filter((t) => t.id !== id)), 3800);
+  }, []);
+  return (
+    <ToastCtx.Provider value={push}>
+      {children}
+      <div className="fixed bottom-5 right-5 z-[60] space-y-2 w-[320px]" aria-live="polite">
+        {items.map((t) => (
+          <div key={t.id} className="glass rounded-xl px-4 py-3 text-sm shadow-card animate-rise border-l-2"
+            style={{
+              color: "var(--text-1)",
+              borderLeftColor: t.tone === "success" ? "#34D399" : t.tone === "error" ? "#F43F5E" : "#EC2F8B",
+            }}>{t.msg}</div>
+        ))}
+      </div>
+    </ToastCtx.Provider>
+  );
+}
+
+/* ---------- Skeleton / Empty / Loading / Err ---------- */
+export function Skeleton({ className }: { className?: string }) {
+  return <div className={cn("skeleton rounded-lg", className || "h-4 w-full")} />;
+}
+export function SkeletonCard() {
+  return <div className="glass rounded-2xl p-5 space-y-3"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-8 w-2/3" /><Skeleton className="h-4 w-full" /></div>;
+}
+export function TableSkeleton({ rows = 6 }: { rows?: number }) {
+  return <div className="space-y-2 py-2">{Array.from({ length: rows }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}</div>;
+}
+
+export function EmptyState({ icon, title, hint, action }: {
+  icon?: React.ReactNode; title: string; hint?: string; action?: React.ReactNode;
+}) {
+  return (
+    <div className="py-12 text-center">
+      {icon && <div className="mx-auto w-12 h-12 rounded-2xl glass flex items-center justify-center mb-3" style={{ color: "var(--text-2)" }}>{icon}</div>}
+      <p className="font-semibold" style={{ color: "var(--text-1)" }}>{title}</p>
+      {hint && <p className="text-sm mt-1" style={{ color: "var(--text-2)" }}>{hint}</p>}
+      {action && <div className="mt-4 flex justify-center">{action}</div>}
+    </div>
+  );
 }
 
 export function Loading({ msg }: { msg?: string }) {
-  return <div className="py-16 text-center text-slate-500 text-sm animate-pulse">{msg || "Loading…"}</div>;
+  return (
+    <div className="py-14 grid gap-3">
+      <div className="flex items-center justify-center gap-2 text-sm animate-pulse" style={{ color: "var(--text-2)" }}>
+        <Loader2 size={16} className="animate-spin" /> {msg || "Loading…"}
+      </div>
+      <div className="grid md:grid-cols-3 gap-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
+    </div>
+  );
 }
 
 export function Err({ msg, retry }: { msg: string; retry?: () => void }) {
   return (
     <div className="py-10 text-center">
-      <p className="text-sm text-red-600">{msg}</p>
-      {retry && <button onClick={retry} className="mt-2 text-sm text-indigo-600 underline">Retry</button>}
+      <p className="text-sm text-semantic-danger">{msg}</p>
+      {retry && <Button variant="secondary" size="sm" className="mt-3" onClick={retry}>Retry</Button>}
     </div>
   );
 }
 
-export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+/* ---------- Tooltip (CSS-only) ---------- */
+export function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block">
-      <span className="text-xs font-medium text-slate-600">{label}</span>
-      <div className="mt-1">{children}</div>
-    </label>
+    <span className="relative group inline-flex" tabIndex={0} aria-label={label}>
+      {children}
+      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[11px] font-medium opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity z-30"
+        style={{ background: "var(--tooltip-bg)", color: "var(--text-1)", border: "1px solid var(--border)" }}>{label}</span>
+    </span>
   );
 }
 
-export const inputCls = "w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500";
-export const btnPrimary = "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg";
-export const btnGhost = "border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg";
+/* ---------- Avatar ---------- */
+const AV = ["#C026D3,#EC2F8B", "#EC2F8B,#FF4D6D", "#8B5CF6,#EC2F8B", "#F59E0B,#FF4D6D", "#34D399,#60A5FA", "#60A5FA,#C026D3"];
+export function Avatar({ name, size = 36, risk }: { name: string; size?: number; risk?: "Low" | "Medium" | "High" }) {
+  const initials = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
+  const g = AV[(name.charCodeAt(0) || 0) % AV.length];
+  const halo = risk === "High" ? "0 0 0 2px rgba(255,77,109,0.55), 0 0 16px rgba(255,77,109,0.5)"
+    : risk === "Medium" ? "0 0 0 2px rgba(251,191,36,0.5), 0 0 14px rgba(251,191,36,0.4)"
+    : risk === "Low" ? "0 0 0 2px rgba(52,211,153,0.45), 0 0 14px rgba(52,211,153,0.35)"
+    : "0 0 14px rgba(236,47,139,0.4)";
+  return (
+    <span className="avatar-orb inline-flex shrink-0" title={name} style={{ width: size + 4, height: size + 4 }}>
+      <span className="rounded-full w-full h-full flex items-center justify-center text-xs font-extrabold text-white"
+        style={{ width: size, height: size, background: `linear-gradient(135deg, ${g})`, boxShadow: halo }}>
+        {initials}
+      </span>
+    </span>
+  );
+}
+
+/* ---------- PageHeader ---------- */
+export function PageHeader({ eyebrow, title, desc, actions }: {
+  eyebrow?: string; title: string; desc?: string; actions?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
+      <div className="min-w-0">
+        {eyebrow && <div className="text-[11px] font-bold uppercase tracking-[0.14em] gradient-text mb-1">{eyebrow}</div>}
+        <h1 className="page-title text-[22px] md:text-[26px] leading-tight" style={{ color: "var(--text-1)" }}>{title}</h1>
+        {desc && <p className="text-[13px] mt-1.5 max-w-2xl" style={{ color: "var(--text-2)" }}>{desc}</p>}
+      </div>
+      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+    </div>
+  );
+}
+
+/* ---------- Charts ---------- */
+export const chartColors = {
+  brand: ["#C026D3", "#EC2F8B", "#FF4D6D"],
+  risk: ["#34D399", "#FBBF24", "#FF4D6D"],
+  grid: "rgba(255,255,255,0.06)",
+  tick: "#A1A1AA",
+};
+export function BrandDefs({ id = "brand" }: { id?: string }) {
+  return (
+    <defs>
+      <linearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#EC2F8B" stopOpacity={0.55} />
+        <stop offset="100%" stopColor="#EC2F8B" stopOpacity={0.02} />
+      </linearGradient>
+      <linearGradient id={`${id}-bar`} x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stopColor="#C026D3" /><stop offset="55%" stopColor="#EC2F8B" /><stop offset="100%" stopColor="#FF4D6D" />
+      </linearGradient>
+      <linearGradient id={`${id}-line`} x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stopColor="#EC2F8B" /><stop offset="100%" stopColor="#FF4D6D" />
+      </linearGradient>
+    </defs>
+  );
+}
+export function ChartTooltip({ active, payload, label, formatter }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rq-tooltip">
+      {label != null && label !== "" && <div className="font-bold mb-1">{String(label)}</div>}
+      {payload.map((p: any, i: number) => (
+        <div key={i} className="flex items-center gap-2 tnum">
+          <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.payload?.fill || "#EC2F8B" }} />
+          <span style={{ color: "var(--text-2)" }}>{p.name}:</span>
+          <b>{formatter ? formatter(p.value, p) : p.value}</b>
+        </div>
+      ))}
+    </div>
+  );
+}
