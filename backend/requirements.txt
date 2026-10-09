@@ -9,3 +9,6 @@ numpy==1.26.4
 scikit-learn==1.5.2
 httpx==0.28.1
 pytest==8.3.4
+# Postgres driver for managed-DB deploys (SQLite is the local default).
+# Safe to install everywhere; unused when DATABASE_URL is sqlite.
+psycopg2-binary==2.9.10

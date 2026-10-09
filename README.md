@@ -40,6 +40,28 @@ cd frontend; npm install; npm run dev
 Log in with `admin@demobank.in / demo123` (or the one-click demo buttons on
 the login page). The `.env.example` file lists the optional settings
 (`DATABASE_URL` for Postgres, `JWT_SECRET`, `GEMINI_API_KEY`/`OPENAI_API_KEY`).
+Google sign-in is optional: leave `GOOGLE_CLIENT_ID` /
+`NEXT_PUBLIC_GOOGLE_CLIENT_ID` empty and the Google button stays hidden —
+email + demo login works with zero setup. Set both to the same Google OAuth
+client ID to enable `POST /api/auth/google` (verified via Google tokeninfo,
+first-time users auto-join Demo Bank as manager).
+
+## Deploy (Docker)
+
+```powershell
+# 1) Env
+copy .env.example .env
+# edit .env: set JWT_SECRET (64+ hex chars), CORS_ORIGINS=https://your-frontend
+# optional: GOOGLE_CLIENT_ID + NEXT_PUBLIC_GOOGLE_CLIENT_ID (same value)
+
+# 2) Run
+docker compose up --build
+# Frontend: http://localhost:3000  |  API: http://localhost:8000/docs
+```
+
+Backend seeds demo data on first boot (`python -m backend.seed`, skips when
+tenants exist). For Postgres set `DATABASE_URL=postgresql+psycopg2://...`
+(`psycopg2-binary` is in requirements). Health check: `GET /api/health`.
 
 ## Folder layout
 

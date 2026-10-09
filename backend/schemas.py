@@ -43,6 +43,10 @@ class LoginIn(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class GoogleIn(BaseModel):
+    credential: str = Field(min_length=10, max_length=8000)
+
+
 class RoiIn(BaseModel):
     min_proba: float = Field(default=0.4, ge=0.0, le=1.0)
     min_clv: float = Field(default=0, ge=0, le=1e12)

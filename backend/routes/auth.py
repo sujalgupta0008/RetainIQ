@@ -1,3 +1,4 @@
+import os
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -51,6 +52,74 @@ def login(body: S.LoginIn, db: Session = Depends(get_db)):
     db.commit()
     return {"token": make_token(user.id, user.tenant_id, user.role), "tenant": tenant.name if tenant else "",
             "tenant_id": user.tenant_id, "role": user.role, "email": user.email}
+
+
+GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo"
+
+
+def _verify_google_credential(credential: str) -> dict:
+    """Verify a Google ID token via the tokeninfo endpoint. Returns the token payload.
+
+    Uses httpx (already a backend dependency) so no new packages are needed.
+    Raises HTTPException on any verification failure.
+    """
+    import httpx
+
+    try:
+        resp = httpx.get(GOOGLE_TOKENINFO_URL, params={"id_token": credential}, timeout=10)
+    except Exception:
+        raise HTTPException(503, "Google verification unavailable, try email or demo login")
+    if resp.status_code != 200:
+        raise HTTPException(401, "Invalid Google credential")
+    try:
+        payload = resp.json()
+    except Exception:
+        raise HTTPException(401, "Invalid Google credential")
+    return payload
+
+
+@r.post("/google", dependencies=[Depends(rate_limit(30, 60))])
+def google_login(body: S.GoogleIn, db: Session = Depends(get_db)):
+    """Exchange a Google ID token for a RetainIQ session JWT.
+
+    Requires GOOGLE_CLIENT_ID on the server. First-time Google users are
+    auto-provisioned into the default tenant as manager (same privilege as open
+    registration; never admin). When Google is not configured the endpoint
+    returns 503 with a message pointing at email/demo login.
+    """
+    server_client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+    if not server_client_id:
+        raise HTTPException(503, "Google sign-in is not configured on the server. Use email or one-click demo login.")
+    payload = _verify_google_credential(body.credential.strip())
+    if payload.get("aud") != server_client_id:
+        raise HTTPException(401, "Google credential was issued for a different app")
+    if payload.get("email_verified") not in ("true", True, "1", 1):
+        raise HTTPException(401, "Google email is not verified")
+    email = str(payload.get("email", "")).strip().lower()
+    if "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(401, "Google account has no usable email")
+    user = db.query(M.User).filter_by(email=email).first()
+    if user is None:
+        tenant = db.query(M.Tenant).filter_by(name="Demo Bank").first()
+        if tenant is None:
+            tenant = db.query(M.Tenant).first()
+        if tenant is None:
+            tenant = M.Tenant(name="Demo Bank")
+            db.add(tenant)
+            db.flush()
+        salt = secrets.token_hex(16)
+        # Random unusable password — this account authenticates via Google only.
+        user = M.User(tenant_id=tenant.id, email=email, salt=salt,
+                      pw_hash=hash_pw(secrets.token_hex(32), salt), role="manager")
+        db.add(user)
+        db.flush()
+        audit(db, tenant.id, user.id, "google_register", email[:120])
+    tenant = db.query(M.Tenant).filter_by(id=user.tenant_id).first()
+    audit(db, user.tenant_id, user.id, "google_login", email[:120])
+    db.commit()
+    return {"token": make_token(user.id, user.tenant_id, user.role),
+            "tenant": tenant.name if tenant else "", "tenant_id": user.tenant_id,
+            "role": user.role, "email": user.email}
 
 
 @r.get("/me")

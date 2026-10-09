@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Landmark, ShieldCheck, FlaskConical, KeyRound, ArrowRight, Loader2, Play } from "lucide-react";
 import { Button, Input } from "@/components/ui";
@@ -7,10 +7,12 @@ import { Reveal } from "@/components/motion";
 import FloatingDash from "@/components/FloatingDash";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-// Optional Google Identity client ID. When unset (default), the Google button
-// shows a clear message instead of a broken flow. Server exchange lives at
-// POST /api/auth/google (backend-owned; not part of this UI).
+// Google is optional. When NEXT_PUBLIC_GOOGLE_CLIENT_ID is unset the Google
+// button is hidden entirely and email + one-click demo login is the path.
+// Server exchange lives at POST /api/auth/google (requires GOOGLE_CLIENT_ID).
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+const GOOGLE_ENABLED = GOOGLE_CLIENT_ID.length > 0;
+const GSI_SRC = "https://accounts.google.com/gsi/client";
 
 function GoogleIcon() {
   return (
@@ -30,7 +32,26 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [gmsg, setGmsg] = useState("");
   const [gbusy, setGbusy] = useState(false);
+  const [gsiReady, setGsiReady] = useState(false);
   const router = useRouter();
+
+  // Load Google Identity Services only when a client ID is configured.
+  useEffect(() => {
+    if (!GOOGLE_ENABLED) return;
+    if ((window as any).google?.accounts?.id) { setGsiReady(true); return; }
+    const existing = document.querySelector(`script[src="${GSI_SRC}"]`);
+    if (existing) {
+      existing.addEventListener("load", () => setGsiReady(true));
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = GSI_SRC;
+    s.async = true;
+    s.defer = true;
+    s.onload = () => setGsiReady(true);
+    s.onerror = () => setGmsg("Google script failed to load. Use email or demo login.");
+    document.head.appendChild(s);
+  }, []);
 
   async function submit(e?: React.FormEvent, demoEmail?: string) {
     e?.preventDefault();
@@ -50,9 +71,14 @@ export default function Login() {
   async function googleLogin() {
     setGmsg(""); setGbusy(true);
     try {
+      if (!GOOGLE_ENABLED) {
+        throw new Error("Google sign-in is not enabled. Use email or one-click demo login.");
+      }
       const g: any = (window as any).google?.accounts?.id;
-      if (!GOOGLE_CLIENT_ID || !g) {
-        throw new Error("Google sign-in isn't connected yet (no client ID). Use email or one-click demo login.");
+      if (!g) {
+        throw new Error(gsiReady
+          ? "Google sign-in failed to initialise. Use email or demo login."
+          : "Loading Google sign-in… please try again in a second, or use email/demo login.");
       }
       const credential = await new Promise<string>((resolve, reject) => {
         try {
@@ -145,15 +171,23 @@ export default function Login() {
                 {busy ? "Signing in…" : <>Sign in <ArrowRight size={16} /></>}
               </Button>
             </form>
-            <div className="flex items-center gap-3 my-3" aria-hidden>
-              <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--text-3)" }}>or</span>
-              <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
-            </div>
-            <Button variant="secondary" className="w-full bg-white min-h-[2.75rem]" size="lg" loading={gbusy} onClick={googleLogin}>
-              <GoogleIcon /> Continue with Google
-            </Button>
-            {gmsg && <p className="text-xs mt-2 text-center" role="status" style={{ color: "var(--text-2)" }}>{gmsg}</p>}
+            {GOOGLE_ENABLED ? (
+              <>
+                <div className="flex items-center gap-3 my-3" aria-hidden>
+                  <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--text-3)" }}>or</span>
+                  <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                </div>
+                <Button variant="secondary" className="w-full bg-white min-h-[2.75rem]" size="lg" loading={gbusy} disabled={!gsiReady && !gmsg} onClick={googleLogin}>
+                  <GoogleIcon /> {gsiReady ? "Continue with Google" : "Loading Google…"}
+                </Button>
+                {gmsg && <p className="text-xs mt-2 text-center" role="status" style={{ color: "var(--text-2)" }}>{gmsg}</p>}
+              </>
+            ) : (
+              <p className="text-[11px] mt-3 text-center" style={{ color: "var(--text-3)" }}>
+                Email or one-click demo login — no setup needed.
+              </p>
+            )}
             <div className="mt-3 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] mb-2" style={{ color: "var(--text-3)" }}>One-click demo login</p>
               <div className="grid grid-cols-2 gap-2">

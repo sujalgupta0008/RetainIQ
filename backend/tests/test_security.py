@@ -177,3 +177,16 @@ def test_escape_like_unit():
 def test_unauthenticated_blocked(client):
     assert client.get("/api/dashboard/summary").status_code in (401, 403)
     assert client.get("/api/customers").status_code in (401, 403)
+
+
+def test_google_unconfigured_returns_503(client, monkeypatch):
+    # Default deploy has no GOOGLE_CLIENT_ID — endpoint must point at email/demo.
+    monkeypatch.delenv("GOOGLE_CLIENT_ID", raising=False)
+    r = client.post("/api/auth/google", json={"credential": "bogus.token.here"})
+    assert r.status_code == 503
+    assert "email or" in r.text.lower() or "demo" in r.text.lower()
+
+
+def test_google_rejects_short_credential(client):
+    r = client.post("/api/auth/google", json={"credential": "x"})
+    assert r.status_code == 422
