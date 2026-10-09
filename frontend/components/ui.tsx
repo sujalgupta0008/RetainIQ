@@ -128,16 +128,17 @@ export function Button({ variant, size, loading, className, children, ...rest }:
     danger: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/20",
   };
   const s = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-sm", lg: "px-5 py-2.5 text-sm" }[size || "md"];
-  const bg = variant === "primary"
+  const vt = variant || "primary";
+  const bg = vt === "primary"
     ? { backgroundImage: "linear-gradient(135deg,#2563EB,#3B82F6)" }
     : undefined;
   return (
     <button
       {...rest}
       disabled={loading || rest.disabled}
-      style={{ color: variant === "primary" ? "#fff" : "var(--text-1)", borderWidth: 1, ...bg }}
+      style={{ color: vt === "primary" ? "#fff" : "var(--text-1)", borderWidth: 1, ...bg }}
       className={cn("inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-200",
-        "disabled:opacity-60 disabled:pointer-events-none focus-visible:outline-none", v[variant || "primary"], s, className)}>
+        "disabled:opacity-60 disabled:pointer-events-none focus-visible:outline-none", v[vt], s, className)}>
       {loading && <Loader2 size={15} className="animate-spin" />}
       {children}
     </button>

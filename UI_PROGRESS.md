@@ -52,10 +52,17 @@ overlaps grid edge on lg, inline on mobile) → campaign table retained.
 - Remaining `text-semantic-*` / `text-risk-high` usages resolve through new tokens (teal
   growth, orange high-risk) — no edits needed. Tilt glow + Tabs hover + tooltip dot → blue.
 
-## Phase 5 — Verify (TODO)
-## Phase 3 — 3D/motion light version (TODO)
-## Phase 4 — Re-theme remaining pages (TODO)
-## Phase 5 — Verify (TODO)
+## Phase 5 — Verify (DONE)
+- `npm run build` ✅ 17/17 · `tsc --noEmit` ✅ · backend **65 passed** (= baseline, untouched).
+- `git diff -- frontend/next.config.js` ✅ empty. Prod smoke ✅ 13/13 routes 200.
+- Screenshots ✅ `docs/screenshots/after-retheme/` (14 PNGs, light+dark, 1440/768/390) —
+  every capture zero console/page errors.
+- Lighthouse login 90/100/93 ✅; authed-dashboard LH blocked by context isolation →
+  Playwright vitals instead (FCP ~80ms, CLS 0.022, TBT 0). Details in `docs/UI_REPORT.md`.
+- Fixes from verify: Button primary default; stale-build 500s; orphaned servers.
+- Report ✅ `docs/UI_REPORT.md` rewritten for the re-theme.
+
+## (old phases 1–6 audit table from the charcoal redesign follows)
 
 ## Phase 1 — Audit (DONE)
 See table below. `docs/screenshots/before/` holds a README (no automated befores — backend auth
